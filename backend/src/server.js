@@ -11,6 +11,9 @@ const authRoutes = require('./routes/authRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 const AppError = require('./utils/AppError');
 
+const memoryManager = require('./memory/manager/memoryManager');
+const prompts = require('./prompts');
+
 const app = express();
 
 connectDB();
@@ -68,10 +71,14 @@ async function startServer(port) {
         try {
           const activeModel = await initializeModel();
           console.log(`Active Gemini model: ${activeModel}`);
-          console.log('NEXUS API ready');
         } catch (err) {
           console.error(`[Startup] Model initialization warning (non-fatal): ${err.message}`);
         }
+
+        console.log('[Phase2] Memory engine: ready');
+        console.log(`[Phase2] Prompt categories: ${Object.keys(prompts.PROMPT_CATEGORIES).length} loaded`);
+        console.log(`[Phase2] Pipeline: Planner → Analyzer → Executor → Reviewer → Formatter`);
+        console.log('[Startup] NEXUS API ready');
 
         resolve(server);
       })

@@ -1,14 +1,6 @@
 const geminiConfig = require('../config/gemini');
 const AppError = require('../utils/AppError');
-
-const NEXUS_SYSTEM_PROMPT = `You are NEXUS, a Personal AI Operating System. You are a sophisticated, helpful, and knowledgeable AI assistant. You communicate with clarity, precision, and a touch of cosmic inspiration. You help users with a wide range of tasks including coding, writing, analysis, creative work, and problem-solving.
-
-Core principles:
-- Be concise but thorough in your responses
-- Use markdown formatting for structured content
-- Maintain a professional yet warm tone
-- Admit when you don't know something
-- Think step by step for complex problems`;
+const { getPrompt } = require('../prompts');
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -52,21 +44,20 @@ function dumpErrorProperties(error) {
 function isModelSpecificError(error) {
   const status = error.status || error.statusCode || 0;
 
-  // Auth errors won't be fixed by changing model — bail out immediately
   if (status === 401 || status === 403) {
     return { fallback: false };
   }
 
-  // Any other error is worth trying with a different model
   return { fallback: true };
 }
 
-async function generateWithModel(userMessage, history, modelName) {
+async function generateWithModel(userMessage, history, modelName, systemPrompt) {
+  const effectivePrompt = systemPrompt || getPrompt('system');
   console.log(`[Gemini] Model: ${modelName}`);
   console.log(`[Gemini] User message length: ${userMessage.length} chars`);
   console.log(`[Gemini] History messages: ${history.length}`);
 
-  const model = geminiConfig.getGeminiModel(NEXUS_SYSTEM_PROMPT, modelName);
+  const model = geminiConfig.getGeminiModel(effectivePrompt, modelName);
 
   const convertedHistory = history
     .filter((m) => m.role === 'user' || m.role === 'assistant')
@@ -96,7 +87,7 @@ async function generateWithModel(userMessage, history, modelName) {
   return text;
 }
 
-exports.generateAIResponse = async (userMessage, history = []) => {
+exports.generateAIResponse = async (userMessage, history = [], systemPrompt) => {
   const modelChain = geminiConfig.MODEL_FALLBACK_CHAIN;
   const attemptedModels = [];
   let lastError = null;
@@ -108,7 +99,7 @@ exports.generateAIResponse = async (userMessage, history = []) => {
     for (let attempt = 1; attempt <= MAX_RETRIES_PER_MODEL; attempt++) {
       try {
         console.log(`[Gemini] Attempt ${attempt}/${MAX_RETRIES_PER_MODEL} on ${modelName}`);
-        const text = await generateWithModel(userMessage, history, modelName);
+        const text = await generateWithModel(userMessage, history, modelName, systemPrompt);
         console.log(`[Gemini] ✓ SUCCESS with model "${modelName}" on attempt ${attempt}`);
         return text;
       } catch (error) {

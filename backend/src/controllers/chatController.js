@@ -1,6 +1,6 @@
 const Chat = require('../models/Chat');
 const Message = require('../models/Message');
-const { generateAIResponse } = require('../services/geminiService');
+const pipeline = require('../core/pipeline');
 const AppError = require('../utils/AppError');
 
 exports.createChat = async (req, res, next) => {
@@ -89,21 +89,30 @@ exports.sendMessage = async (req, res, next) => {
       .sort({ createdAt: 1 })
       .limit(20);
 
-    console.log(`[Chat] Sending to Gemini — chat: ${chatId}, history: ${history.length} msgs, content: "${content.substring(0, 50)}..."`);
+    console.log(`[Chat] Processing via Nexus pipeline — chat: ${chatId}, history: ${history.length} msgs, content: "${content.substring(0, 50)}..."`);
 
-    const aiContent = await generateAIResponse(content, history);
+    const pipelineResult = await pipeline.processMessage(req.user._id, chat, content, history);
 
-    const assistantMessage = await Message.create({ chatId, role: 'assistant', content: aiContent });
+    const assistantMessage = await Message.create({ chatId, role: 'assistant', content: pipelineResult.content });
 
     chat.updatedAt = new Date();
     await chat.save();
 
-    console.log(`[Chat] ✓ Response received — ${aiContent.length} chars`);
+    console.log(`[Chat] ✓ Response received — ${pipelineResult.content.length} chars (format: ${pipelineResult.formatType}, elapsed: ${pipelineResult.metadata.elapsed}ms)`);
 
     return res.status(200).json({
       success: true,
       userMessage,
       assistantMessage,
+      pipeline: {
+        formatType: pipelineResult.formatType,
+        complexity: pipelineResult.metadata.complexity,
+        elapsed: pipelineResult.metadata.elapsed,
+        review: {
+          score: pipelineResult.review.agentReview.score,
+          passed: pipelineResult.review.agentReview.passed,
+        },
+      },
     });
   } catch (error) {
     const googleStatus = error.googleStatus || error.statusCode || null;
