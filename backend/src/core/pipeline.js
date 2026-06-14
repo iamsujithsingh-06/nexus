@@ -7,6 +7,7 @@ const ResponseFormatter = require('../formatting/responseFormatter');
 const MemoryManager = require('../memory/manager/memoryManager');
 const ProjectIntelligence = require('../services/projectIntelligence');
 const SelfReview = require('../services/selfReview');
+const PersonalityEngine = require('../personality/engine');
 
 class Pipeline {
   async processMessage(userId, chat, userMessage, history) {
@@ -31,6 +32,9 @@ class Pipeline {
 
     const selfReviewResult = SelfReview.review(finalContent, context);
 
+    const personalityLanguage = PersonalityEngine.detectLanguage(userMessage).language;
+    const personalityContent = PersonalityEngine.enhance(finalContent, userMessage);
+
     process.nextTick(() => {
       this._postProcess(userId, userMessage, executorResult.content, context, plan).catch((err) => {
         console.error('[Pipeline] Post-process error:', err.message);
@@ -40,7 +44,7 @@ class Pipeline {
     const elapsed = Date.now() - startTime;
 
     return {
-      content: finalContent,
+      content: personalityContent,
       rawContent: executorResult.content,
       formatType: plan.formatType,
       review: {
@@ -51,6 +55,10 @@ class Pipeline {
         complexity: plan.complexity,
         elapsed,
         modelAttempts: executorResult.modelAttempts || [],
+        personality: {
+          language: personalityLanguage,
+          enabled: personalityContent !== finalContent,
+        },
       },
     };
   }

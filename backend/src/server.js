@@ -78,6 +78,7 @@ async function startServer(port) {
         console.log('[Phase2] Memory engine: ready');
         console.log(`[Phase2] Prompt categories: ${Object.keys(prompts.PROMPT_CATEGORIES).length} loaded`);
         console.log(`[Phase2] Pipeline: Planner → Analyzer → Executor → Reviewer → Formatter`);
+        console.log(`[Phase2] Personality engine: active (${Object.keys(require('./personality/engine')).length > 0 ? 'language detection + tone + emoji' : 'loaded'})`);
         console.log('[Startup] NEXUS API ready');
 
         resolve(server);
