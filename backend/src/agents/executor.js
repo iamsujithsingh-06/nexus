@@ -2,13 +2,13 @@ const geminiService = require('../services/geminiService');
 const { getSystemPromptWithContext } = require('../prompts');
 
 class Executor {
-  async execute(plan, analysis, userMessage, history) {
-    const formatType = plan.formatType;
+  async execute(plan, analysis, userMessage, history, mode) {
+    const formatType = (mode && mode.mode) || plan.formatType || 'knowledge';
     const combinedContext = this._buildCombinedContext(plan, analysis);
 
     const systemPrompt = getSystemPromptWithContext(combinedContext, formatType);
 
-    const enhancedHistory = this._buildEnhancedHistory(history, plan, analysis);
+    const enhancedHistory = this._buildEnhancedHistory(history, plan, analysis, mode);
 
     const response = await geminiService.generateAIResponse(userMessage, enhancedHistory, systemPrompt);
 
@@ -17,6 +17,7 @@ class Executor {
       formatType,
       plan,
       analysis,
+      responseMode: mode,
     };
   }
 
@@ -38,12 +39,13 @@ class Executor {
     return parts.length ? parts.join('\n') : null;
   }
 
-  _buildEnhancedHistory(history, plan, analysis) {
+  _buildEnhancedHistory(history, plan, analysis, mode) {
+    const modeInfo = mode ? `ResponseMode: ${mode.mode}` : `FormatType: ${plan.formatType}`;
     return [
       ...(history || []),
       {
         role: 'system',
-        content: `Plan: ${JSON.stringify(plan)}\nAnalysis: ${JSON.stringify(analysis)}`,
+        content: `Plan: ${JSON.stringify(plan)}\nAnalysis: ${JSON.stringify(analysis)}\n${modeInfo}`,
       },
     ];
   }

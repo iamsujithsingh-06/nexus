@@ -166,7 +166,7 @@ const TANGLISH_CONNECTORS = [
 ];
 
 class ToneAdapter {
-  transform(text, language) {
+  transform(text, language, modeName) {
     if (!text || text.length < 10) return text;
 
     let result = this._applyCorporateTransforms(text, language);
@@ -174,6 +174,10 @@ class ToneAdapter {
     if (language === 'tanglish') {
       result = this._applyTanglishStyle(result);
       result = this._addTanglishEnergy(result);
+    } else if (modeName === 'casual') {
+      result = this._addCasualEnergy(result);
+    } else if (modeName === 'quick') {
+      result = this._addQuickEnergy(result);
     } else {
       result = this._addGeneralEnergy(result);
     }
@@ -242,6 +246,37 @@ class ToneAdapter {
       if (line.endsWith('?') && !line.endsWith('da?') && !line.endsWith('bro?')) {
         lines[i] = line.replace(/\?$/, ' da?');
       }
+    }
+
+    return lines.join('\n');
+  }
+
+  _addCasualEnergy(text) {
+    const lines = text.split('\n').filter(Boolean);
+    if (lines.length === 0 || lines.length > 5) return text;
+
+    let lastLine = lines[lines.length - 1].trim();
+    const hasEnding = /\b(bye|later|let me know|cheers|take care)\b/i.test(lastLine);
+    if (!hasEnding && lines.length <= 3) {
+      const endings = ['😊', '👍', '✨', '🙌'];
+      if (!/[😊👍✨🙌🎉🚀]/.test(lastLine)) {
+        lastLine = lastLine.replace(/[.!]*\s*$/, '') + ' ' + endings[Math.floor(Math.random() * endings.length)];
+        lines[lines.length - 1] = lastLine;
+      }
+    }
+
+    return lines.join('\n');
+  }
+
+  _addQuickEnergy(text) {
+    const lines = text.split('\n').filter(Boolean);
+    if (lines.length === 0) return text;
+
+    const ctaIndex = lines.findIndex((l) =>
+      /\b(let me know|what do you think|hope that helps|give it a try)\b/i.test(l.trim())
+    );
+    if (ctaIndex >= 0 && ctaIndex > lines.length - 3) {
+      lines.splice(ctaIndex);
     }
 
     return lines.join('\n');

@@ -26,6 +26,15 @@ class Planner {
     };
   }
 
+  getResponseMode(userMessage) {
+    try {
+      const detector = require('../formatting/responseModeDetector');
+      return detector.detect(userMessage);
+    } catch {
+      return { mode: 'knowledge', confidence: 0.5, triggers: ['fallback'] };
+    }
+  }
+
   _matchesCoding(msg) {
     const patterns = [
       /code|function|bug|debug|error|implement|refactor|api|endpoint|route/,
@@ -106,3 +115,4 @@ class Planner {
 }
 
 module.exports = new Planner();
+module.exports.Planner = Planner;

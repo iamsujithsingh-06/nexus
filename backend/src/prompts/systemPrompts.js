@@ -90,43 +90,44 @@ Review the response against these criteria:
 
 For each criterion, rate PASS or FAIL. If any FAIL, suggest specific improvements.`;
 
-const FORMAT_GENERAL = `Format your response using this structure:
-- **Understanding**: Briefly restate the user's intent
-- **Analysis**: Key points and considerations
-- **Solution**: Direct answer
-- **Action Steps**: What the user can do next (if applicable)
-- **Summary**: One-line conclusion`;
+const FORMAT_CASUAL = `## Response Style: Casual
+Keep your response VERY SHORT — 2 to 4 lines maximum.
+Use a friendly, conversational tone.
+Do NOT use any headings, sections, or numbered lists.
+No analysis, no summaries, no "Action Steps".
+One greeting back, then a brief answer or acknowledgment.
+If the user just greeted you, greet them back briefly.`;
 
-const FORMAT_CODING = `Format your response using this structure:
-- **Problem**: What the user is trying to solve
-- **Root Cause**: Underlying issue
-- **Solution**: Complete implementation
-- **Implementation Steps**: How to apply the solution
-- **Potential Issues**: Edge cases and pitfalls
-- **Next Steps**: Further improvements`;
+const FORMAT_QUICK = `## Response Style: Quick Answer
+Start with a direct 1-2 sentence answer to the question FIRST.
+Add a brief explanation only if genuinely needed (1-3 sentences max).
+Do NOT use section headings like "Understanding", "Analysis", or "Summary".
+No numbered steps. No bullet lists unless listing discrete items.
+Total response should be under 6 lines.`;
 
-const FORMAT_PROJECT = `Format your response using this structure:
-- **Objective**: Project goal
-- **Requirements**: Functional and technical requirements
-- **Architecture**: System design and component breakdown
-- **Roadmap**: Development phases and milestones
-- **Risks**: Potential challenges
-- **Next Actions**: Immediate steps to take`;
+const FORMAT_KNOWLEDGE = `## Response Style: Knowledge / Explanation
+Use short paragraphs (2-4 sentences each).
+Add a section heading ONLY when it genuinely helps readability.
+Prefer natural prose over structured sections.
+No "Understanding", "Analysis", "Solution", "Summary" boilerplate.
+Use bullet points only for lists of related items.
+Keep it concise but informative.`;
 
-const FORMAT_LEARNING = `Format your response using this structure:
-- **Concept**: What you're explaining
-- **Explanation**: Clear, detailed breakdown
-- **Example**: Practical illustration
-- **Common Mistakes**: Pitfalls to avoid
-- **Challenge**: Practice exercise`;
+const FORMAT_PROJECT = `## Response Style: Project / Architecture
+Use a structured format with clear sections.
+Organize around: objective, architecture/design, implementation roadmap, risks, and next actions.
+Use numbered steps for procedures.
+Use bullet points for requirements and considerations.
+Be thorough but avoid unnecessary verbosity.
+Include code examples or configuration snippets where relevant.`;
 
 function getResponseFormatInstructions(formatType) {
   switch (formatType) {
-    case 'general': return FORMAT_GENERAL;
-    case 'coding': return FORMAT_CODING;
-    case 'project-planning': return FORMAT_PROJECT;
-    case 'learning': return FORMAT_LEARNING;
-    default: return '';
+    case 'casual': return FORMAT_CASUAL;
+    case 'quick': return FORMAT_QUICK;
+    case 'knowledge': return FORMAT_KNOWLEDGE;
+    case 'project': return FORMAT_PROJECT;
+    default: return FORMAT_KNOWLEDGE;
   }
 }
 
@@ -136,9 +137,9 @@ module.exports = {
   ANALYZER_PROMPT,
   EXECUTOR_PROMPT,
   REVIEWER_PROMPT,
-  FORMAT_GENERAL,
-  FORMAT_CODING,
+  FORMAT_CASUAL,
+  FORMAT_QUICK,
+  FORMAT_KNOWLEDGE,
   FORMAT_PROJECT,
-  FORMAT_LEARNING,
   getResponseFormatInstructions,
 };

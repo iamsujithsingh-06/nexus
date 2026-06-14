@@ -198,7 +198,35 @@ class EmojiManager {
     return entry ? entry.emoji : null;
   }
 
-  enhance(text) {
+  enhance(text, modeName) {
+    if (modeName === 'casual') {
+      return this._addCasualEmoji(text);
+    }
+    if (modeName === 'quick') {
+      return this._addQuickEmoji(text);
+    }
+    return this.addEmojis(text);
+  }
+
+  _addCasualEmoji(text) {
+    if (!text || text.length < 5) return text;
+    const casualEmojis = ['😊', '👍', '✨', '🙌', '👋', '💪'];
+    const trimmed = text.trim();
+    if (trimmed.length < 40) {
+      const emoji = casualEmojis[Math.floor(Math.random() * casualEmojis.length)];
+      return `${trimmed.replace(/[.!]*\s*$/, '')} ${emoji}`;
+    }
+    return text;
+  }
+
+  _addQuickEmoji(text) {
+    if (!text || text.length < 10) return text;
+    const trimmed = text.trim();
+    if (trimmed.length < 80 && !trimmed.startsWith('#')) {
+      const infoEmojis = ['💡', '📌', '✨'];
+      const emoji = infoEmojis[Math.floor(Math.random() * infoEmojis.length)];
+      return `${emoji} ${trimmed}`;
+    }
     return this.addEmojis(text);
   }
 }

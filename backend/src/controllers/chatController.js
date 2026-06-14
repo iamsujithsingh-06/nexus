@@ -98,7 +98,9 @@ exports.sendMessage = async (req, res, next) => {
     chat.updatedAt = new Date();
     await chat.save();
 
-    console.log(`[Chat] ✓ Response received — ${pipelineResult.content.length} chars (format: ${pipelineResult.formatType}, elapsed: ${pipelineResult.metadata.elapsed}ms)`);
+    const mode = pipelineResult.responseMode || 'knowledge';
+
+    console.log(`[Chat] ✓ Response received — ${pipelineResult.content.length} chars (mode: ${mode}, elapsed: ${pipelineResult.metadata.elapsed}ms)`);
 
     return res.status(200).json({
       success: true,
@@ -106,6 +108,7 @@ exports.sendMessage = async (req, res, next) => {
       assistantMessage,
       pipeline: {
         formatType: pipelineResult.formatType,
+        responseMode: mode,
         complexity: pipelineResult.metadata.complexity,
         elapsed: pipelineResult.metadata.elapsed,
         review: {

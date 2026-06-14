@@ -16,24 +16,25 @@ class Pipeline {
     const context = await ContextEngine.build(userId, { chat, history });
 
     const plan = Planner.analyze(userMessage, context);
+    const mode = Planner.getResponseMode(userMessage);
     const analysis = Analyzer.analyze(userMessage, plan, context);
 
-    const executorResult = await Executor.execute(plan, analysis, userMessage, history);
+    const executorResult = await Executor.execute(plan, analysis, userMessage, history, mode);
 
     const reviewResult = Reviewer.review(executorResult, plan, analysis);
 
     let finalContent = executorResult.content;
     if (reviewResult.passed || reviewResult.score >= 60) {
-      finalContent = ResponseFormatter.format(executorResult.content, plan.formatType);
+      finalContent = ResponseFormatter.format(executorResult.content, mode);
     } else {
       console.warn(`[Pipeline] Review score ${reviewResult.score}% — minor issues flagged but response accepted`);
-      finalContent = ResponseFormatter.format(executorResult.content, plan.formatType);
+      finalContent = ResponseFormatter.format(executorResult.content, mode);
     }
 
     const selfReviewResult = SelfReview.review(finalContent, context);
 
     const personalityLanguage = PersonalityEngine.detectLanguage(userMessage).language;
-    const personalityContent = PersonalityEngine.enhance(finalContent, userMessage);
+    const personalityContent = PersonalityEngine.enhanceWithMode(finalContent, userMessage, mode);
 
     process.nextTick(() => {
       this._postProcess(userId, userMessage, executorResult.content, context, plan).catch((err) => {
@@ -46,7 +47,7 @@ class Pipeline {
     return {
       content: personalityContent,
       rawContent: executorResult.content,
-      formatType: plan.formatType,
+      responseMode: mode.mode,
       review: {
         agentReview: reviewResult,
         selfReview: selfReviewResult,
@@ -55,6 +56,7 @@ class Pipeline {
         complexity: plan.complexity,
         elapsed,
         modelAttempts: executorResult.modelAttempts || [],
+        responseMode: mode,
         personality: {
           language: personalityLanguage,
           enabled: personalityContent !== finalContent,

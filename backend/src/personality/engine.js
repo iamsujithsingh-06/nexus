@@ -4,6 +4,10 @@ const EmojiManager = require('./emojiManager');
 
 class PersonalityEngine {
   enhance(responseText, userMessage) {
+    return this.enhanceWithMode(responseText, userMessage, null);
+  }
+
+  enhanceWithMode(responseText, userMessage, mode) {
     if (!responseText || !responseText.trim()) return responseText;
     if (this._shouldSkipPersonality(responseText)) return responseText;
 
@@ -11,11 +15,13 @@ class PersonalityEngine {
       ? LanguageDetector.detect(userMessage)
       : { language: 'general', confidence: 0 };
 
+    const modeName = (mode && mode.mode) || null;
+
     if (langResult.language === 'tanglish') {
-      return this._applyTanglishPersonality(responseText);
+      return this._applyTanglishPersonality(responseText, modeName);
     }
 
-    return this._applyEnglishPersonality(responseText);
+    return this._applyEnglishPersonality(responseText, modeName);
   }
 
   enhanceWithLanguage(responseText, language) {
@@ -23,23 +29,23 @@ class PersonalityEngine {
     if (this._shouldSkipPersonality(responseText)) return responseText;
 
     if (language === 'tanglish') {
-      return this._applyTanglishPersonality(responseText);
+      return this._applyTanglishPersonality(responseText, null);
     }
 
-    return this._applyEnglishPersonality(responseText);
+    return this._applyEnglishPersonality(responseText, null);
   }
 
-  _applyEnglishPersonality(text) {
+  _applyEnglishPersonality(text, modeName) {
     let result = text;
-    result = ToneAdapter.transform(result, 'general');
-    result = EmojiManager.enhance(result);
+    result = ToneAdapter.transform(result, 'general', modeName);
+    result = EmojiManager.enhance(result, modeName);
     return result;
   }
 
-  _applyTanglishPersonality(text) {
+  _applyTanglishPersonality(text, modeName) {
     let result = text;
-    result = ToneAdapter.transform(result, 'tanglish');
-    result = EmojiManager.enhance(result);
+    result = ToneAdapter.transform(result, 'tanglish', modeName);
+    result = EmojiManager.enhance(result, modeName);
     return result;
   }
 
