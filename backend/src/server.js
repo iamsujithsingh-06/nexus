@@ -6,9 +6,10 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const connectDB = require('./config/db');
-const { initializeModel } = require('./config/gemini');
+const aiService = require('./services/aiService');
 const authRoutes = require('./routes/authRoutes');
 const chatRoutes = require('./routes/chatRoutes');
+const memoryRoutes = require('./routes/memoryRoutes');
 const AppError = require('./utils/AppError');
 
 const memoryManager = require('./memory/manager/memoryManager');
@@ -16,12 +17,30 @@ const prompts = require('./prompts');
 
 const app = express();
 
+// TRUST PROXY — required so req.ip resolves to the real client IP behind Vite proxy
+app.set('trust proxy', 1);
+
 connectDB();
 
+function extractReqId(req) {
+  return req.headers['x-request-id'] || `be-${Date.now()}`;
+}
+
+const IS_DEV = process.env.NODE_ENV !== 'production';
+
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
+  windowMs: IS_DEV ? 60 * 1000 : 15 * 60 * 1000,
+  max: IS_DEV ? 300 : 100,
   message: { success: false, message: 'Too many requests, please try again later' },
+  keyGenerator: (req) => {
+    return req.headers['x-forwarded-for'] || req.ip || req.socket?.remoteAddress || 'unknown';
+  },
+  handler: (req, res, _next, options) => {
+    const reqId = extractReqId(req);
+    console.log(`[RATE_LIMIT:${reqId}] ⛔ BLOCKED ${req.method} ${req.originalUrl} — IP: ${req.ip}, realIP: ${req.headers['x-forwarded-for'] || req.ip}, remaining 0 of ${options.max} per ${options.windowMs}ms`);
+    res.status(options.statusCode).json(options.message);
+  },
+  skipSuccessfulRequests: false,
 });
 
 app.use(cors({
@@ -29,11 +48,19 @@ app.use(cors({
   credentials: true,
 }));
 app.use(express.json({ limit: '10kb' }));
+
+// Attach request ID from frontend for cross-reference in logs
+app.use('/api', (req, _res, next) => {
+  req._reqId = extractReqId(req);
+  next();
+});
+
 app.use('/api', limiter);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/chats', chatRoutes);
+app.use('/api/memory', memoryRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ success: true, status: 'NEXUS API is running' });
@@ -68,14 +95,19 @@ async function startServer(port) {
         console.log(`[Startup] ✓ Server listening on port ${actualPort} (PID: ${process.pid})`);
         console.log(`[Startup] Environment: ${process.env.NODE_ENV || 'development'}`);
 
-        try {
-          const activeModel = await initializeModel();
-          console.log(`Active Gemini model: ${activeModel}`);
-        } catch (err) {
-          console.error(`[Startup] Model initialization warning (non-fatal): ${err.message}`);
+        if (aiService.isConfigured()) {
+          const model = process.env.OPENROUTER_MODEL || 'deepseek/deepseek-chat-v3';
+          console.log(`[OpenRouter] AI service configured — default model: ${model}`);
+        } else {
+          console.warn('[OpenRouter] OPENROUTER_API_KEY not set — AI calls will fail until configured');
         }
 
         console.log('[Phase2] Memory engine: ready');
+        console.log('  └─ Storage: MongoDB (8 categories)');
+        console.log('  └─ Extraction: regex + AI-powered');
+        console.log('  └─ Retrieval: keyword + semantic (embeddings)');
+        console.log('  └─ Consolidation: merge + decay + promote');
+        console.log('  └─ API: /api/memory (CRUD + search + summary)');
         console.log(`[Phase2] Prompt categories: ${Object.keys(prompts.PROMPT_CATEGORIES).length} loaded`);
         console.log(`[Phase2] Pipeline: Planner → Analyzer → Executor → Reviewer → Formatter`);
         console.log(`[Phase2] Personality engine: active (${Object.keys(require('./personality/engine')).length > 0 ? 'language detection + tone + emoji' : 'loaded'})`);

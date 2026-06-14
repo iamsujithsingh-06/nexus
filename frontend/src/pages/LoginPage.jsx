@@ -12,7 +12,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-cosmic-bg flex items-center justify-center p-4">
+    <div className="min-h-screen bg-nexus-bg flex items-center justify-center p-4">
       <AuthForm mode="login" onSubmit={handleLogin} />
     </div>
   );

@@ -5,6 +5,16 @@ const { getPrompt } = require('../prompts');
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const MAX_RETRIES_PER_MODEL = 2;
+const GEMINI_TIMEOUT_MS = 45000;
+
+function withTimeout(promise, ms, label) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error(`Timed out after ${ms}ms: ${label}`)), ms)
+    ),
+  ]);
+}
 
 function extractQuotaInfo(error) {
   const info = { violations: [], retryDelay: null };
@@ -51,13 +61,12 @@ function isModelSpecificError(error) {
   return { fallback: true };
 }
 
-async function generateWithModel(userMessage, history, modelName, systemPrompt) {
+async function generateWithModel(userMessage, history, modelName, systemPrompt, reqId = '?') {
   const effectivePrompt = systemPrompt || getPrompt('system');
-  console.log(`[Gemini] Model: ${modelName}`);
-  console.log(`[Gemini] User message length: ${userMessage.length} chars`);
-  console.log(`[Gemini] History messages: ${history.length}`);
 
   const model = geminiConfig.getGeminiModel(effectivePrompt, modelName);
+
+  const MAX_CONTEXT_MESSAGES = 40;
 
   const convertedHistory = history
     .filter((m) => m.role === 'user' || m.role === 'assistant')
@@ -66,41 +75,44 @@ async function generateWithModel(userMessage, history, modelName, systemPrompt) 
       parts: [{ text: m.content }],
     }));
 
-  console.log(`[Gemini] Converted history entries: ${convertedHistory.length}`);
+  const limitedHistory = convertedHistory.slice(-MAX_CONTEXT_MESSAGES);
+
+  console.log('[DEBUG] === GEMINI SERVICE: FINAL FORMATTED HISTORY ===');
+  console.log('[DEBUG] Model:', modelName);
+  console.log('[DEBUG] Raw history count (from executor):', history.length);
+  console.log('[DEBUG] Converted history count (after role filter):', convertedHistory.length);
+  console.log('[DEBUG] Limited history count (after slice):', limitedHistory.length);
+  console.log('[DEBUG] MAX_CONTEXT_MESSAGES:', MAX_CONTEXT_MESSAGES);
+  console.log('[DEBUG] Formatted history:', JSON.stringify(limitedHistory, null, 2));
+  console.log('[DEBUG] Current user prompt:', userMessage);
 
   let result;
-  if (convertedHistory.length > 0) {
-    console.log('[Gemini] Using startChat + sendMessage path');
-    const chat = model.startChat({ history: convertedHistory });
-    result = await chat.sendMessage(userMessage);
+  if (limitedHistory.length > 0) {
+    console.log('[DEBUG] → Calling chat.sendMessage() with history');
+    const chat = model.startChat({ history: limitedHistory });
+    result = await withTimeout(chat.sendMessage(userMessage), GEMINI_TIMEOUT_MS, `chat.sendMessage(${modelName})`);
   } else {
-    console.log('[Gemini] Using generateContent path (no history)');
-    result = await model.generateContent(userMessage);
+    console.log('[DEBUG] → Calling model.generateContent() (no history)');
+    result = await withTimeout(model.generateContent(userMessage), GEMINI_TIMEOUT_MS, `generateContent(${modelName})`);
   }
 
   const response = result.response;
   const text = response.text();
 
-  console.log(`[Gemini] ✓ Success — response length: ${text.length} chars`);
-  console.log(`[Gemini] Response preview: ${text.substring(0, 100)}...`);
-
   return text;
 }
 
-exports.generateAIResponse = async (userMessage, history = [], systemPrompt) => {
+exports.generateAIResponse = async (userMessage, history = [], systemPrompt, reqId = '?') => {
   const modelChain = geminiConfig.MODEL_FALLBACK_CHAIN;
   const attemptedModels = [];
   let lastError = null;
 
   for (const modelName of modelChain) {
     attemptedModels.push(modelName);
-    console.log(`[Gemini] ═══ Switching to model: "${modelName}" ═══`);
 
     for (let attempt = 1; attempt <= MAX_RETRIES_PER_MODEL; attempt++) {
       try {
-        console.log(`[Gemini] Attempt ${attempt}/${MAX_RETRIES_PER_MODEL} on ${modelName}`);
-        const text = await generateWithModel(userMessage, history, modelName, systemPrompt);
-        console.log(`[Gemini] ✓ SUCCESS with model "${modelName}" on attempt ${attempt}`);
+        const text = await generateWithModel(userMessage, history, modelName, systemPrompt, reqId);
         return text;
       } catch (error) {
         lastError = error;
@@ -109,31 +121,20 @@ exports.generateAIResponse = async (userMessage, history = [], systemPrompt) => 
         const statusText = error.statusText || '';
         const errorMessage = error.message || String(error);
 
-        console.error(`[Gemini] ✗ Attempt ${attempt}/${MAX_RETRIES_PER_MODEL} FAILED on "${modelName}"`);
-        console.error(`[Gemini] Status: ${statusCode} ${statusText}`);
-        console.error(`[Gemini] Message: ${errorMessage}`);
-        console.error(`[Gemini] Full error object:`, JSON.stringify(dumpErrorProperties(error), null, 2));
-        console.error(`[Gemini] Error constructor name: ${error.constructor?.name}`);
+        console.error(`[Gemini] ✗ Attempt ${attempt}/${MAX_RETRIES_PER_MODEL} on "${modelName}" — [${statusCode}] ${errorMessage}`);
 
         const quotaInfo = extractQuotaInfo(error);
         if (quotaInfo.violations.length > 0) {
-          console.error(`[Gemini] QUOTA VIOLATIONS FOUND:`);
-          quotaInfo.violations.forEach((v, i) => {
-            console.error(`  [${i + 1}] Metric: ${v.quotaMetric}`);
-            console.error(`      Quota ID: ${v.quotaId}`);
-            if (v.dimensions) {
-              console.error(`      Dimensions: ${JSON.stringify(v.dimensions)}`);
-            }
+          console.error(`[Gemini] Quota violations on "${modelName}":`);
+          quotaInfo.violations.forEach((v) => {
+            console.error(`  Metric: ${v.quotaMetric} (${v.quotaId})`);
           });
-          if (quotaInfo.retryDelay) {
-            console.error(`[Gemini] Retry delay from Google: ${quotaInfo.retryDelay}`);
-          }
         }
 
         const { fallback } = isModelSpecificError(error);
 
         if (!fallback) {
-          console.error(`[Gemini] Non-retryable error (auth). Aborting all fallback.`);
+          console.error(`[Gemini] Non-retryable error on "${modelName}". Aborting fallback chain.`);
           const err = new AppError(errorMessage, statusCode || 503);
           err.originalError = error;
           err.googleStatus = statusCode;
@@ -145,18 +146,17 @@ exports.generateAIResponse = async (userMessage, history = [], systemPrompt) => 
 
         if (statusCode === 429 && attempt < MAX_RETRIES_PER_MODEL) {
           const backoffMs = 2000 * attempt;
-          console.log(`[Gemini] 429 received on "${modelName}". Backing off ${backoffMs}ms before retry ${attempt + 1}`);
+          console.log(`[Gemini] 429 on "${modelName}", backing off ${backoffMs}ms (attempt ${attempt}/${MAX_RETRIES_PER_MODEL})`);
           await sleep(backoffMs);
           continue;
         }
 
         if (attempt < MAX_RETRIES_PER_MODEL) {
-          console.log(`[Gemini] Retrying on "${modelName}" in ${attempt * 500}ms...`);
           await sleep(attempt * 500);
           continue;
         }
 
-        console.log(`[Gemini] Model "${modelName}" exhausted (${MAX_RETRIES_PER_MODEL} attempts). Moving to next model.`);
+        console.log(`[Gemini] Model "${modelName}" exhausted after ${MAX_RETRIES_PER_MODEL} attempts.`);
       }
     }
   }

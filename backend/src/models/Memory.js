@@ -13,14 +13,18 @@ const memorySchema = new mongoose.Schema(
       required: true,
       enum: [
         'user_profile',
+        'profile',
         'preference',
         'goal',
         'skill',
         'project',
         'learning_progress',
+        'interest',
+        'conversation',
         'conversation_insight',
         'fact',
         'decision',
+        'insight',
       ],
     },
     key: {
@@ -42,14 +46,47 @@ const memorySchema = new mongoose.Schema(
       min: -10,
       max: 10,
     },
-    expiresAt: {
-      type: Date,
-      default: null,
+    importance: {
+      type: Number,
+      default: 0,
+      min: -10,
+      max: 10,
+    },
+    confidence: {
+      type: Number,
+      default: 0.5,
+      min: 0,
+      max: 1,
     },
     source: {
       type: String,
-      enum: ['auto', 'manual', 'system'],
-      default: 'auto',
+      enum: ['inference', 'explicit', 'manual', 'imported', 'ai_extracted', 'system'],
+      default: 'inference',
+    },
+    context: {
+      type: String,
+      default: '',
+    },
+    conversationId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Message',
+      default: null,
+    },
+    accessCount: {
+      type: Number,
+      default: 0,
+    },
+    lastAccessedAt: {
+      type: Date,
+      default: null,
+    },
+    embedding: {
+      type: [Number],
+      default: [],
+    },
+    expiresAt: {
+      type: Date,
+      default: null,
     },
   },
   {

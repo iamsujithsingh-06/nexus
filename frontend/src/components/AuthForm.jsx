@@ -39,32 +39,32 @@ export default function AuthForm({ mode, onSubmit, error }) {
 
   return (
     <div className="w-full max-w-md animate-fade-in">
-      <div className="text-center mb-8">
-        <div className="w-16 h-16 rounded-2xl nexus-gradient flex items-center justify-center mx-auto mb-4 shadow-lg shadow-purple-500/20">
-          <span className="text-white text-2xl font-bold">N</span>
+      <div className="text-center mb-10">
+        <div className="flex justify-center mb-5">
+          <img src="/GAMING NEXUS.jpg" alt="NEXUS" className="w-20 h-20 object-contain" />
         </div>
-        <h1 className="text-2xl font-bold text-white mb-1">
+        <h1 className="text-xl font-semibold text-white mb-1.5">
           {isLogin ? 'Welcome back' : 'Join NEXUS'}
         </h1>
-        <p className="text-cosmic-muted text-sm">
+        <p className="text-sm text-nexus-subtle/50">
           {isLogin
             ? 'Sign in to your account to continue'
             : 'Create your account and start your journey'}
         </p>
       </div>
 
-      <div className="glass-panel rounded-2xl p-6 md:p-8">
+      <div className="glass-panel rounded-2xl p-7">
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
             <div>
-              <label className="block text-sm font-medium text-cosmic-muted mb-1.5">
+              <label className="block text-xs font-medium text-nexus-subtle/60 mb-1.5">
                 Name
               </label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full cosmic-input rounded-xl px-4 py-2.5 text-sm"
+                className="w-full nexus-input rounded-xl px-4 py-2.5 text-sm"
                 placeholder="Your name"
                 autoComplete="name"
               />
@@ -72,28 +72,28 @@ export default function AuthForm({ mode, onSubmit, error }) {
           )}
 
           <div>
-            <label className="block text-sm font-medium text-cosmic-muted mb-1.5">
+            <label className="block text-xs font-medium text-nexus-subtle/60 mb-1.5">
               Email
             </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full cosmic-input rounded-xl px-4 py-2.5 text-sm"
+              className="w-full nexus-input rounded-xl px-4 py-2.5 text-sm"
               placeholder="you@example.com"
               autoComplete="email"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-cosmic-muted mb-1.5">
+            <label className="block text-xs font-medium text-nexus-subtle/60 mb-1.5">
               Password
             </label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full cosmic-input rounded-xl px-4 py-2.5 text-sm"
+              className="w-full nexus-input rounded-xl px-4 py-2.5 text-sm"
               placeholder="At least 6 characters"
               autoComplete={isLogin ? 'current-password' : 'new-password'}
             />
@@ -106,7 +106,7 @@ export default function AuthForm({ mode, onSubmit, error }) {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full btn-primary rounded-xl py-2.5 text-sm font-medium flex items-center justify-center gap-2"
+            className="w-full py-2.5 text-sm font-medium rounded-xl bg-nexus-accent/10 border border-nexus-accent/20 text-nexus-accent/80 hover:bg-nexus-accent/20 hover:text-nexus-accent transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {isSubmitting ? (
               <>
@@ -122,18 +122,18 @@ export default function AuthForm({ mode, onSubmit, error }) {
           </button>
         </form>
 
-        <p className="text-center text-sm text-cosmic-muted mt-6">
+        <p className="text-center text-sm text-nexus-subtle/50 mt-6">
           {isLogin ? (
             <>
               Don&apos;t have an account?{' '}
-              <Link to="/register" className="text-purple-400 hover:text-purple-300 font-medium">
+              <Link to="/register" className="text-nexus-accent hover:text-nexus-accent/80 font-medium">
                 Create one
               </Link>
             </>
           ) : (
             <>
               Already have an account?{' '}
-              <Link to="/login" className="text-purple-400 hover:text-purple-300 font-medium">
+              <Link to="/login" className="text-nexus-accent hover:text-nexus-accent/80 font-medium">
                 Sign in
               </Link>
             </>

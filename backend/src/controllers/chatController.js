@@ -2,6 +2,12 @@ const Chat = require('../models/Chat');
 const Message = require('../models/Message');
 const pipeline = require('../core/pipeline');
 const AppError = require('../utils/AppError');
+const { classify, isGoal } = require('../brain/conversationClassifier');
+const goalManager = require('../brain/goalManager');
+const contextBuilder = require('../brain/contextBuilder');
+const MemoryManager = require('../memory/manager/memoryManager');
+const MemoryRetriever = require('../memory/retrieval/memoryRetriever');
+const { detectMemoryQuery } = require('../memory/detection/memoryQueryDetector');
 
 exports.createChat = async (req, res, next) => {
   try {
@@ -70,6 +76,7 @@ exports.deleteChat = async (req, res, next) => {
 
 exports.sendMessage = async (req, res, next) => {
   const { chatId, content } = req.body;
+  const reqId = req._reqId || '?';
   let userMessage;
 
   try {
@@ -85,13 +92,78 @@ exports.sendMessage = async (req, res, next) => {
       await chat.save();
     }
 
-    const history = await Message.find({ chatId })
-      .sort({ createdAt: 1 })
-      .limit(20);
+    const history = await Message.find({ chatId, _id: { $ne: userMessage._id } })
+      .sort({ createdAt: -1 })
+      .limit(19)
+      .lean();
+    history.reverse();
 
-    console.log(`[Chat] Processing via Nexus pipeline — chat: ${chatId}, history: ${history.length} msgs, content: "${content.substring(0, 50)}..."`);
+    // ── Brain Layer: Classify mode → detect memory queries → gate memory → build context ──
+    let enrichedContent = content;
+    let conversationMode = 'general';
+    let isMemQuery = false;
+    try {
+      // Step 1: Classify conversation mode (never injects goals/memory unprompted)
+      const classification = classify(content);
+      conversationMode = classification.mode;
 
-    const pipelineResult = await pipeline.processMessage(req.user._id, chat, content, history);
+      // Step 2: Detect if the message is asking about stored personal information
+      // This runs regardless of mode — even "question" and "general" modes can
+      // need memory if the user asks "What's my name?" or "Tell me about my goals"
+      const memQuery = detectMemoryQuery(content);
+      isMemQuery = memQuery.isMemoryQuery;
+
+      // Step 3: Retrieve goals + memory when needed
+      let goals = null;
+      let memoryContext = null;
+
+      if (classification.needsMemory || isMemQuery) {
+        if (isMemQuery) {
+          // Memory query: use relevance-ranked retrieval
+          memoryContext = await MemoryRetriever.getContextForMessage(req.user._id, content);
+          if (memoryContext && memoryContext.length > 0) {
+            console.log(`[Brain] Memory query detected — retrieved ${memoryContext.length} relevant memories`);
+          } else {
+            console.log(`[Brain] Memory query detected — no matching memories found`);
+          }
+        } else {
+          // Full pipeline modes: use legacy context retrieval
+          goals = goalManager.getGoals('active');
+          memoryContext = await MemoryManager.getContextForUser(req.user._id);
+          console.log(`[Brain] Memory retrieved for mode: ${classification.mode}`);
+        }
+      } else {
+        console.log(`[Brain] Mode: ${classification.mode} — no memory needed`);
+      }
+
+      // Step 4: Build and serialize context (skips goals/memory when null)
+      const brainContext = contextBuilder.buildContext(goals, memoryContext, content, classification.mode, isMemQuery);
+      enrichedContent = contextBuilder.serializeContext(brainContext);
+
+      // Step 5: If the message IS a goal, save it regardless of mode
+      if (classification.mode === 'goal' || isGoal(content)) {
+        const title = goalManager.extractTitle(content);
+        if (title) {
+          const saved = goalManager.saveGoal(title, content, 'general', 'chat');
+          if (saved) console.log(`[Brain] New goal saved: "${saved.title}"`);
+        }
+      }
+    } catch (brainError) {
+      // Non-fatal: brain enrichment failures fall back to the raw message
+      console.error('[Brain] Enrichment failed (non-fatal):', brainError.message);
+    }
+    // ── End Brain Layer ──
+
+    const pipelineTimeout = setTimeout(() => {
+      console.error(`[Chat] ⚠️ Pipeline is taking >30s for chat ${chatId}`);
+    }, 30000);
+
+    let pipelineResult;
+    try {
+      pipelineResult = await pipeline.processMessage(req.user._id, chat, enrichedContent, history, reqId, conversationMode);
+    } finally {
+      clearTimeout(pipelineTimeout);
+    }
 
     const assistantMessage = await Message.create({ chatId, role: 'assistant', content: pipelineResult.content });
 
@@ -118,35 +190,20 @@ exports.sendMessage = async (req, res, next) => {
       },
     });
   } catch (error) {
-    const googleStatus = error.googleStatus || error.statusCode || null;
-    const googleMessage = error.message || 'AI service is currently unavailable. Please try again later.';
+    const aiStatus = error.statusCode || error.aiStatus || null;
+    const aiMessage = error.message || 'AI service is currently unavailable. Please try again later.';
 
-    console.error(`[Chat] ✗ Gemini failed — [${googleStatus}] ${googleMessage}`);
-    if (error.googleQuotaViolations) {
-      console.error(`[Chat] Quota violations: ${JSON.stringify(error.googleQuotaViolations)}`);
-    }
+    console.error(`[Chat] ✗ AI failed — [${aiStatus}] ${aiMessage}`);
 
-    const httpStatus = googleStatus && googleStatus >= 400 && googleStatus < 500 ? googleStatus : 200;
+    const httpStatus = aiStatus && aiStatus >= 400 && aiStatus < 500 ? aiStatus : 200;
 
     const errorPayload = {
       success: false,
       userMessage,
-      error: googleMessage,
-      ...(googleStatus ? { googleStatus } : {}),
+      error: aiMessage,
+      ...(aiStatus ? { aiStatus } : {}),
     };
 
-    if (error.googleQuotaViolations) {
-      errorPayload.googleQuotaViolations = error.googleQuotaViolations;
-    }
-    if (error.googleRetryDelay) {
-      errorPayload.googleRetryDelay = error.googleRetryDelay;
-    }
-    if (error.googleStatusText) {
-      errorPayload.googleStatusText = error.googleStatusText;
-    }
-    if (error.googleFullMessage) {
-      errorPayload.googleFullMessage = error.googleFullMessage;
-    }
     if (error.attemptedModels) {
       errorPayload.attemptedModels = error.attemptedModels;
     }

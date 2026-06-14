@@ -3,6 +3,19 @@ const Memory = require('../../models/Memory');
 class MemoryStorage {
   async save(userId, type, key, value, options = {}) {
     try {
+      const newConfidence = options.confidence ?? 0.5;
+
+      // Check existing — don't overwrite higher-confidence memories
+      const existing = await Memory.findOne({ userId, key }).lean();
+      if (existing && (existing.confidence || 0) > newConfidence) {
+        // Keep the higher-confidence value, but update access metadata
+        await Memory.updateOne(
+          { _id: existing._id },
+          { $set: { lastAccessedAt: new Date() }, $inc: { accessCount: 1 } }
+        );
+        return await Memory.findById(existing._id);
+      }
+
       const doc = {
         userId,
         type,
@@ -10,8 +23,12 @@ class MemoryStorage {
         value,
         tags: options.tags || [],
         priority: options.priority ?? 0,
+        importance: options.importance ?? (options.priority ?? 0),
+        confidence: newConfidence,
+        source: options.source || 'inference',
+        context: options.context || '',
+        conversationId: options.conversationId || null,
         expiresAt: options.expiresAt || null,
-        source: options.source || 'auto',
       };
 
       const memory = await Memory.findOneAndUpdate(

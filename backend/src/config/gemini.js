@@ -14,7 +14,7 @@ const genAI = new GoogleGenerativeAI(apiKey);
 const PRIMARY_MODEL = 'gemini-2.5-flash-lite';
 const MODEL_FALLBACK_CHAIN = [
   'gemini-2.5-flash-lite',
-  'gemini-3.5-flash',
+  'gemini-1.5-flash',
   'gemini-2.0-flash',
 ];
 

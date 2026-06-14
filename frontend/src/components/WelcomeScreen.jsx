@@ -1,127 +1,138 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
+import CommandInput from './CommandInput';
+import ActionCard from './ActionCard';
 
-const suggestions = [
+const ACTIONS = [
   {
     icon: <CodeIcon />,
-    title: 'Code & Debug',
-    desc: 'Write, review, or debug code with AI assistance',
-    prompt: 'Help me debug this error: "TypeError: Cannot read property..."',
+    title: 'Coding',
+    subtitle: 'Write, debug, and optimize code',
+    prompt: 'Help me with a coding task. I need to write, debug, or optimize some code.',
   },
   {
-    icon: <BrainIcon />,
-    title: 'Learn & Explore',
-    desc: 'Understand concepts, deep-dive into any topic',
-    prompt: 'Explain how the JavaScript event loop works with examples',
+    icon: <BookIcon />,
+    title: 'Study',
+    subtitle: 'Learn new topics and concepts',
+    prompt: 'I want to study a new topic. Help me understand the key concepts and create a learning plan.',
   },
   {
-    icon: <BuildIcon />,
-    title: 'Plan & Build',
-    desc: 'Architecture, roadmaps, and project planning',
-    prompt: 'Design a microservices architecture for an e-commerce platform',
+    icon: <RocketIcon />,
+    title: 'Projects',
+    subtitle: 'Plan and build something great',
+    prompt: 'I have a project idea I want to develop. Help me plan the architecture and implementation steps.',
   },
   {
-    icon: <WriteIcon />,
-    title: 'Write & Create',
-    desc: 'Drafts, documentation, and creative writing',
-    prompt: 'Write a technical blog post about building real-time apps with WebSockets',
+    icon: <SparklesIcon />,
+    title: 'AI Assistant',
+    subtitle: 'Leverage AI for any task',
+    prompt: 'Act as my AI assistant to help me with a task I need to complete.',
   },
 ];
 
-export default function WelcomeScreen({ onCreateChat, onSendMessage }) {
-  return (
-    <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 overflow-y-auto">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        className="text-center max-w-lg mb-12"
-      >
-        <div className="w-12 h-12 rounded-xl bg-nexus-accent/8 border border-nexus-accent/15 flex items-center justify-center mx-auto mb-5">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4a8eff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5"/>
-            <line x1="12" y1="22" x2="12" y2="15.5"/>
-            <polyline points="22 8.5 12 15.5 2 8.5"/>
-          </svg>
-        </div>
-        <h1 className="text-2xl font-semibold tracking-tight text-nexus-text mb-2">
-          Good morning
-        </h1>
-        <p className="text-sm text-nexus-subtle/60 leading-relaxed max-w-md mx-auto">
-          Your AI operating system. Ask anything, build anything.
-        </p>
-      </motion.div>
+export default function WelcomeScreen({ onSendMessage, onStartSession }) {
+  const [inputValue, setInputValue] = useState('');
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-        className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-xl"
-      >
-        {suggestions.map((s, i) => (
-          <motion.button
-            key={s.title}
+  return (
+    <div className="flex-1 min-h-0 overflow-y-auto">
+      <div className="min-h-full flex flex-col items-center px-6 pt-16 md:pt-20 pb-10 max-w-5xl mx-auto">
+        <div className="flex flex-col items-center gap-7 mb-10 w-full max-w-2xl">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            className="flex flex-col items-center gap-5"
+          >
+            <div className="relative">
+              <motion.div
+                animate={{ opacity: [0.3, 0.6, 0.3] }}
+                transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+                className="absolute inset-0 bg-nexus-accent/8 rounded-full blur-[60px]"
+              />
+              <div className="relative rounded-2xl bg-nexus-card/40 backdrop-blur-sm border border-white/[0.06] p-3">
+                <img
+                  src="/GAMING NEXUS.jpg"
+                  alt="NEXUS"
+                  className="w-16 h-16 md:w-20 md:h-20 object-contain"
+                />
+              </div>
+            </div>
+
+            <div className="text-center">
+              <motion.h1
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.25, duration: 0.5 }}
+                className="text-xl md:text-2xl text-white/90 font-medium tracking-tight"
+              >
+                Hi there! How can I assist you today?
+              </motion.h1>
+            </div>
+          </motion.div>
+
+          <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 + i * 0.08, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            whileHover={{ y: -1 }}
-            whileTap={{ scale: 0.99 }}
-            onClick={() => onSendMessage?.(s.prompt)}
-            className="suggestion-card text-left"
+            transition={{ duration: 0.5, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+            className="w-full"
           >
-            <div className="w-8 h-8 rounded-lg bg-nexus-accent/8 border border-nexus-accent/10 flex items-center justify-center mb-3">
-              {s.icon}
-            </div>
-            <h3 className="text-sm font-medium text-nexus-text/90 mb-1">{s.title}</h3>
-            <p className="text-xs text-nexus-muted/50 leading-relaxed">{s.desc}</p>
-          </motion.button>
-        ))}
-      </motion.div>
+            <CommandInput
+              value={inputValue}
+              onValueChange={setInputValue}
+              onSend={onSendMessage}
+              isSending={false}
+              placeholder="Ask anything..."
+            />
+          </motion.div>
+        </div>
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.6 }}
-        className="mt-8 text-center"
-      >
-        <button
-          onClick={onCreateChat}
-          className="text-xs text-nexus-subtle/30 hover:text-nexus-subtle/60 transition-colors"
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4, duration: 0.5 }}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 w-full mb-8"
         >
-          or start a blank conversation
-        </button>
-      </motion.div>
+          {ACTIONS.map((action, i) => (
+            <ActionCard
+              key={action.title}
+              icon={action.icon}
+              title={action.title}
+              subtitle={action.subtitle}
+              index={i}
+              onClick={() => setInputValue(action.prompt)}
+            />
+          ))}
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1 }}
+        >
+          <button
+            onClick={onStartSession}
+            className="text-xs text-nexus-subtle/25 hover:text-nexus-subtle/50 transition-colors tracking-wider"
+          >
+            or begin with a blank session
+          </button>
+        </motion.div>
+      </div>
     </div>
   );
 }
 
+function RocketIcon() {
+  return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg>;
+}
+
+function SparklesIcon() {
+  return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l1.91 5.09L19 10l-5.09 1.91L12 17l-1.91-5.09L5 10l5.09-1.91z"/><line x1="3" y1="18" x2="6" y2="18"/><line x1="18" y1="18" x2="21" y2="18"/><line x1="5" y1="21" x2="5" y2="15"/><line x1="19" y1="21" x2="19" y2="15"/></svg>;
+}
+
 function CodeIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4a8eff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
-    </svg>
-  );
+  return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>;
 }
 
-function BrainIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4a8eff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 2a4 4 0 0 1 4 4v1h2a4 4 0 0 1 4 4v1a4 4 0 0 1-2.34 3.65A4 4 0 0 1 16 18.76V20a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-1.24a4 4 0 0 1-3.66-2.11A4 4 0 0 1 2 12v-1a4 4 0 0 1 4-4h2V6a4 4 0 0 1 4-4z"/>
-    </svg>
-  );
-}
-
-function BuildIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4a8eff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5"/><line x1="12" y1="22" x2="12" y2="15.5"/><polyline points="22 8.5 12 15.5 2 8.5"/>
-    </svg>
-  );
-}
-
-function WriteIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4a8eff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-    </svg>
-  );
+function BookIcon() {
+  return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="14" y2="11"/></svg>;
 }
