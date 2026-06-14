@@ -109,6 +109,37 @@ export function useChat() {
     }
   }, [currentChat]);
 
+  const sendNewMessage = useCallback(async (content) => {
+    if (!content.trim()) return;
+    try {
+      setIsLoading(true);
+      const data = await chatService.createChat();
+      const newChat = data.chat;
+      setCurrentChat(newChat);
+      setMessages([]);
+      setChats((prev) => [newChat, ...prev]);
+      setIsLoading(false);
+      const tempUserMsg = { role: 'user', content, _id: `temp-${Date.now()}` };
+      setMessages([tempUserMsg]);
+      setIsSending(true);
+      const msgData = await chatService.sendMessage(newChat._id, content);
+      setMessages((prev) =>
+        prev
+          .filter((m) => m._id !== tempUserMsg._id)
+          .concat([msgData.userMessage, msgData.assistantMessage].filter(Boolean))
+      );
+      const newTitle = content.length > 50 ? content.substring(0, 50) + '...' : content;
+      setCurrentChat((prev) => ({ ...prev, title: newTitle }));
+      setChats((prev) =>
+        prev.map((c) => (c._id === newChat._id ? { ...c, title: newTitle } : c))
+      );
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to send message');
+    } finally {
+      setIsSending(false);
+    }
+  }, []);
+
   return {
     chats,
     currentChat,
@@ -121,5 +152,6 @@ export function useChat() {
     createNewChat,
     deleteChat,
     sendMessage,
+    sendNewMessage,
   };
 }
