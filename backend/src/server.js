@@ -10,6 +10,7 @@ const aiService = require('./services/aiService');
 const authRoutes = require('./routes/authRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 const memoryRoutes = require('./routes/memoryRoutes');
+const { goalRoutes, taskRoutes } = require('./routes/goalRoutes');
 const AppError = require('./utils/AppError');
 
 const memoryManager = require('./memory/manager/memoryManager');
@@ -47,7 +48,7 @@ app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:5173',
   credentials: true,
 }));
-app.use(express.json({ limit: '10kb' }));
+app.use(express.json({ limit: '100kb' }));
 
 // Attach request ID from frontend for cross-reference in logs
 app.use('/api', (req, _res, next) => {
@@ -61,6 +62,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/chats', chatRoutes);
 app.use('/api/memory', memoryRoutes);
+app.use('/api/goals', goalRoutes);
+app.use('/api/tasks', taskRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ success: true, status: 'NEXUS API is running' });
@@ -71,7 +74,10 @@ app.all('*', (req, res, next) => {
 });
 
 app.use((err, req, res, _next) => {
+  const reqId = req._reqId || 'no-id';
   const statusCode = err.statusCode || 500;
+  console.error(`[ERROR:${reqId}] ${statusCode} ${req.method} ${req.originalUrl} — ${err.message}`);
+  console.error(`[ERROR:${reqId}] Stack:`, err.stack);
   res.status(statusCode).json({
     success: false,
     message: err.message || 'Internal server error',

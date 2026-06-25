@@ -130,12 +130,12 @@ const TECHNICAL_PATTERNS = [
 
 // Goal discussion: explicitly about personal goals
 const GOAL_PATTERNS = [
-  /(goal|aim|objective|target|resolution|milestone)/i,
-  /i (want|need|plan|hope|aim|aspire|intend) to/i,
-  /my goal (is|should be) to/i,
+  /(goal|aim|objective|target|resolution|milestone|dream|ambition|aspiration)/i,
+  /i (want|need|plan|hope|aim|aspire|intend|dream) to/i,
+  /my (goal|dream|ambition|aspiration) (is|should be) to/i,
   /i (will|shall|should|must|have to) (.+) (to |so i can|because)/i,
   /help me (achieve|reach|accomplish|complete)/i,
-  /track (my|my progress on|my goal)/i,
+  /track (my|my progress on|my goal|my dream)/i,
   /how['']?s my (.+) (going|progress)/i,
 ];
 
@@ -328,4 +328,5 @@ function classify(message) {
 module.exports = {
   classify,
   MODE,
+  isGoal,
 };

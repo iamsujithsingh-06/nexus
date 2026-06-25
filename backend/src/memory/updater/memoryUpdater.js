@@ -47,8 +47,11 @@ const EXTRACTION_PATTERNS = {
 
   goal: [
     { pattern: /my goal is to ([^.]+?)(?:\.|,|$)/i, confidence: 0.9, source: 'explicit' },
-    { pattern: /i (?:want to|'?d like to|hope to|aim to|plan to) ([^.]+?)(?:\.|,|$)/i, confidence: 0.6, source: 'explicit' },
-    { pattern: /my (?:main )?(?:goal|objective|aim|target) is ([^.]+?)(?:\.|,|$)/i, confidence: 0.85, source: 'explicit' },
+    { pattern: /my dream is to ([^.]+?)(?:\.|,|$)/i, confidence: 0.85, source: 'explicit' },
+    { pattern: /my ambition is to ([^.]+?)(?:\.|,|$)/i, confidence: 0.85, source: 'explicit' },
+    { pattern: /my aspiration is to ([^.]+?)(?:\.|,|$)/i, confidence: 0.85, source: 'explicit' },
+    { pattern: /i (?:want to|'?d like to|hope to|aim to|plan to|dream to) ([^.]+?)(?:\.|,|$)/i, confidence: 0.6, source: 'explicit' },
+    { pattern: /my (?:main )?(?:goal|objective|aim|target|dream|ambition|aspiration) is ([^.]+?)(?:\.|,|$)/i, confidence: 0.85, source: 'explicit' },
   ],
 
   company: [

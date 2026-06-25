@@ -1,132 +1,143 @@
-/**
- * Memory Ranker — Scores and ranks memories by relevance to the current message.
- *
- * Scoring formula:
- *   score = (keywordMatch × 0.35) + (typeMatch × 0.25) + (importance × 0.20) + (recency × 0.20)
- *
- * Only memories with score ≥ 0.3 are returned. Max 5 items.
- */
+const EmbeddingService = require('../services/embeddingService');
+const QueryNormalizer = require('../retrieval/queryNormalizer');
 
-/**
- * Score a memory against a user message and optional target type.
- *
- * @param {object} memory - Memory document from MongoDB
- * @param {string} message - The current user message
- * @param {string|null} targetType - Specific memory type to prioritize (optional)
- * @param {string|null} targetKey - Specific memory key (optional, highest priority)
- * @returns {number} Score from 0 to 1
- */
-function scoreMemory(memory, message, targetType = null, targetKey = null) {
+const DEFAULT_CONFIG = {
+  minScore: 0.35,
+  maxResults: 5,
+  exactKeyWeight: 0.80,
+  typeExactWeight: 0.50,
+  typeAliasWeight: 0.25,
+  keywordWeight: 0.40,
+  confidenceWeight: 0.12,
+  importanceWeight: 0.08,
+  recencyWeight: 0.05,
+  wrongTypePenalty: 0.30,
+};
+
+const TYPE_ALIASES = {
+  'profile': ['user_profile', 'profile'],
+  'goal': ['goal'],
+  'project': ['project'],
+  'skill': ['skill', 'learning_progress'],
+  'preference': ['preference'],
+  'fact': ['fact'],
+  'insight': ['conversation_insight', 'insight'],
+  'interest': ['interest'],
+};
+
+function scoreMemory(memory, message, normalized, targetType = null, targetKey = null, config = {}) {
+  const cfg = { ...DEFAULT_CONFIG, ...config };
   let score = 0;
+  let signals = {};
 
-  // ── Exact key match (highest priority) ──
+  const valueText = extractText(memory.value).toLowerCase();
+  const keyText = (memory.key || '').toLowerCase();
+  const tagText = (memory.tags || []).join(' ').toLowerCase();
+  const valueText2 = (memory.valueText || '').toLowerCase();
+  const combinedText = [valueText, keyText, tagText, valueText2].join(' ');
+
   if (targetKey && memory.key === targetKey) {
-    score += 0.6;
+    score += cfg.exactKeyWeight;
+    signals.exactKey = cfg.exactKeyWeight;
   }
 
-  // ── Type match ──
   if (targetType) {
-    if (memory.type === targetType) {
-      score += 0.25;
-    }
-    // Broader type match (e.g., goal matches goal_discussion)
-    const typeAliases = {
-      'profile': ['user_profile'],
-      'goal': ['goal'],
-      'project': ['project'],
-      'skill': ['skill', 'learning_progress'],
-      'preference': ['preference'],
-      'fact': ['fact'],
-    };
-    const aliases = typeAliases[targetType] || [targetType];
+    const aliases = TYPE_ALIASES[targetType] || [targetType];
     if (aliases.includes(memory.type)) {
-      score += 0.15;
+      score += cfg.typeExactWeight;
+      signals.typeMatch = cfg.typeExactWeight;
+      // Boost when type matches but no keyword match — common for "favorite X" queries
+      // where stored value doesn't contain the query's descriptive words
+      if (message && normalized && normalized.keywords.length > 0) {
+        const keywords = normalized.keywords;
+        const hasContentMatch = keywords.some(k =>
+          combinedText.includes(k) || combinedText.includes(k.replace(/s$/, ''))
+        );
+        if (!hasContentMatch) {
+          score += 0.25;
+          signals.typeNoKeywordBoost = 0.25;
+        }
+      }
+    } else {
+      const memoAliases = TYPE_ALIASES[memory.type] || [memory.type];
+      if (aliases.some(a => memoAliases.includes(a))) {
+        score += cfg.typeAliasWeight;
+        signals.typeAlias = cfg.typeAliasWeight;
+      } else {
+        score -= cfg.wrongTypePenalty;
+        signals.wrongTypePenalty = -cfg.wrongTypePenalty;
+      }
     }
   }
 
-  // ── Keyword match between message and memory value/text ──
-  if (message) {
-    const lowerMsg = message.toLowerCase();
-    const valueText = extractText(memory.value).toLowerCase();
-    const keyText = memory.key.toLowerCase();
-
-    // Check if message keywords appear in memory value
-    const msgWords = lowerMsg
-      .replace(/[^\w\s]/g, '')
-      .split(/\s+/)
-      .filter((w) => w.length > 2 && !isStopWord(w));
-
-    const matchCount = msgWords.filter((w) => valueText.includes(w) || keyText.includes(w)).length;
-    const keywordScore = msgWords.length > 0 ? matchCount / msgWords.length : 0;
-    score += keywordScore * 0.35;
+  if (message && normalized) {
+    const keywords = normalized.keywords;
+    if (keywords.length > 0) {
+      let matchCount = 0;
+      for (const kw of keywords) {
+        if (combinedText.includes(kw)) matchCount++;
+      }
+      const kwScore = keywords.length > 0 ? matchCount / keywords.length : 0;
+      score += kwScore * cfg.keywordWeight;
+      signals.keyword = kwScore * cfg.keywordWeight;
+    }
   }
 
-  // ── Importance (normalize from -10..10 to 0..1) ──
   const importance = memory.importance ?? memory.priority ?? 0;
   const importanceScore = (importance + 10) / 20;
-  score += importanceScore * 0.20;
+  score += importanceScore * cfg.importanceWeight;
+  signals.importance = importanceScore * cfg.importanceWeight;
 
-  // ── Recency (days since updated, capped at 30) ──
+  const confidence = memory.confidence ?? 0.5;
+  score += confidence * cfg.confidenceWeight;
+  signals.confidence = confidence * cfg.confidenceWeight;
+
   const updatedAt = memory.updatedAt || memory.createdAt || new Date(0);
   const daysSinceUpdate = (Date.now() - new Date(updatedAt).getTime()) / 86400000;
   const recencyScore = Math.max(0, 1 - daysSinceUpdate / 30);
-  score += recencyScore * 0.20;
+  score += recencyScore * cfg.recencyWeight;
+  signals.recency = recencyScore * cfg.recencyWeight;
 
-  return Math.min(1, Math.max(0, score));
+  return { score: Math.min(1, Math.max(-1, score)), signals };
 }
 
-/**
- * Rank an array of memories by relevance to the current message.
- *
- * @param {Array} memories - Raw memory documents from MongoDB
- * @param {string} message - Current user message
- * @param {string|null} targetType - Optional type to prioritize
- * @param {string|null} targetKey - Optional exact key to prioritize
- * @param {number} minScore - Minimum score threshold (default 0.3)
- * @param {number} maxResults - Max items to return (default 5)
- * @returns {Array} Sorted, filtered memories with scores attached
- */
-function rankMemories(memories, message, targetType = null, targetKey = null, minScore = 0.3, maxResults = 5) {
+async function rankMemories(memories, message, targetType = null, targetKey = null, userId = null, config = {}) {
   if (!memories || memories.length === 0) return [];
+  const cfg = { ...DEFAULT_CONFIG, ...config };
+  const normalized = QueryNormalizer.normalize(message);
 
-  const scored = memories
-    .map((m) => ({
-      ...m,
-      _score: scoreMemory(m, message, targetType, targetKey),
-    }))
-    .filter((m) => m._score >= minScore)
-    .sort((a, b) => b._score - a._score)
-    .slice(0, maxResults);
+  let semanticMap = new Map();
+  if (userId && memories.length > 0) {
+    try {
+      const semanticResults = await EmbeddingService.searchBySimilarity(userId, message, memories.length, 0.05);
+      for (const sr of semanticResults) {
+        semanticMap.set(String(sr._id), sr._similarity || 0);
+      }
+    } catch {}
+  }
 
-  return scored;
+  const scored = memories.map(m => {
+    const { score: baseScore, signals } = scoreMemory(m, message, normalized, targetType, targetKey, cfg);
+    const semanticScore = semanticMap.get(String(m._id)) || 0;
+    const blendBase = targetKey ? 0.95 : (targetType ? 0.92 : 0.80);
+    const finalScore = (baseScore * blendBase) + (semanticScore * (1 - blendBase));
+    return { ...m, _score: Math.min(1, Math.max(-1, finalScore)), _signals: signals, _semantic: semanticScore };
+  });
+
+  const minScore = Math.max(cfg.minScore, targetKey ? 0.5 : cfg.minScore);
+  const filtered = scored.filter(m => m._score >= minScore);
+  const sorted = filtered.sort((a, b) => b._score - a._score).slice(0, cfg.maxResults);
+
+  return sorted;
 }
 
-/**
- * Extract readable text from a memory value object.
- */
 function extractText(value) {
   if (!value) return '';
   if (typeof value === 'string') return value;
   if (typeof value === 'object') {
-    return Object.values(value)
-      .filter((v) => typeof v === 'string')
-      .join(' ');
+    return Object.values(value).filter(v => typeof v === 'string').join(' ');
   }
   return String(value);
 }
 
-const STOP_WORDS = new Set([
-  'the', 'this', 'that', 'and', 'for', 'are', 'but', 'not', 'you',
-  'all', 'can', 'had', 'her', 'was', 'one', 'our', 'out', 'has',
-  'have', 'been', 'some', 'them', 'than', 'what', 'when', 'your',
-  'about', 'into', 'over', 'just', 'also', 'like', 'more',
-]);
-
-function isStopWord(word) {
-  return STOP_WORDS.has(word);
-}
-
-module.exports = {
-  rankMemories,
-  scoreMemory,
-};
+module.exports = { rankMemories, scoreMemory, DEFAULT_CONFIG };

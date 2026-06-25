@@ -3,6 +3,7 @@ const Message = require('../models/Message');
 const pipeline = require('../core/pipeline');
 const AppError = require('../utils/AppError');
 const { classify, isGoal } = require('../brain/conversationClassifier');
+const QueryNormalizer = require('../memory/retrieval/queryNormalizer');
 const goalManager = require('../brain/goalManager');
 const contextBuilder = require('../brain/contextBuilder');
 const MemoryManager = require('../memory/manager/memoryManager');
@@ -140,8 +141,8 @@ exports.sendMessage = async (req, res, next) => {
       const brainContext = contextBuilder.buildContext(goals, memoryContext, content, classification.mode, isMemQuery);
       enrichedContent = contextBuilder.serializeContext(brainContext);
 
-      // Step 5: If the message IS a goal, save it regardless of mode
-      if (classification.mode === 'goal' || isGoal(content)) {
+      // Step 5: If the message IS a goal declaration (not a query), save it
+      if (!QueryNormalizer.isGoalQuery(content) && (classification.mode === 'goal' || isGoal(content))) {
         const title = goalManager.extractTitle(content);
         if (title) {
           const saved = goalManager.saveGoal(title, content, 'general', 'chat');

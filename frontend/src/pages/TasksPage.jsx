@@ -1,13 +1,42 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
-import { useTasks } from '../hooks/useTasks';
+import { useTasksApi } from '../hooks/useTasksApi';
+import * as goalApi from '../services/goalApi';
 import TaskForm from '../components/TaskForm';
 import TaskItem from '../components/TaskItem';
 
+function normalizeTask(t) {
+  return {
+    ...t,
+    id: t._id || t.id,
+    status: t.status === 'completed' ? 'Completed' : t.status === 'pending' ? 'Pending' : t.status,
+  };
+}
+
 export default function TasksPage() {
-  const { tasks, create, toggleStatus, update, remove } = useTasks();
+  const { tasks, create, update, remove, toggle, loading } = useTasksApi();
   const [showForm, setShowForm] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
+  const [apiGoals, setApiGoals] = useState([]);
+
+  useEffect(() => {
+    goalApi.getGoals().then(res => {
+      if (res?.goals) setApiGoals(res.goals);
+    }).catch(() => {});
+  }, []);
+
+  const handleSubmit = async (data) => {
+    if (editingTask) {
+      await update(editingTask._id || editingTask.id, data);
+    } else {
+      await create(data);
+    }
+    setShowForm(false);
+    setEditingTask(null);
+  };
+
+  // Merge API goals for TaskForm (falls back to localStorage)
+  const formGoals = apiGoals.filter(g => g.status === 'active');
 
   return (
     <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin">
@@ -31,34 +60,36 @@ export default function TasksPage() {
         <AnimatePresence>
           {showForm && (
             <TaskForm
-              task={editingTask}
-              onSubmit={(data) => {
-                if (editingTask) {
-                  update(editingTask.id, data);
-                } else {
-                  create(data);
-                }
-                setShowForm(false);
-                setEditingTask(null);
-              }}
+              task={editingTask ? normalizeTask(editingTask) : null}
+              goals={formGoals}
+              onSubmit={handleSubmit}
               onCancel={() => { setShowForm(false); setEditingTask(null); }}
             />
           )}
         </AnimatePresence>
 
-        {tasks.length > 0 ? (
-          <div className="space-y-1.5">
-            {tasks.map((task) => (
-              <TaskItem
-                key={task.id}
-                task={task}
-                onToggle={toggleStatus}
-                onEdit={(t) => { setEditingTask(t); setShowForm(true); }}
-                onDelete={remove}
-              />
-            ))}
+        {loading && tasks.length === 0 && (
+          <div className="text-center py-12">
+            <span className="inline-block w-6 h-6 border-2 border-nexus-accent/30 border-t-nexus-accent rounded-full animate-spin" />
           </div>
-        ) : (
+        )}
+
+        {!loading && tasks.length > 0 ? (
+          <div className="space-y-1.5">
+            {tasks.map((task) => {
+              const normal = normalizeTask(task);
+              return (
+                <TaskItem
+                  key={normal.id}
+                  task={normal}
+                  onToggle={(id) => toggle(id)}
+                  onEdit={(t) => { setEditingTask(task); setShowForm(true); }}
+                  onDelete={(id) => remove(id)}
+                />
+              );
+            })}
+          </div>
+        ) : !loading ? (
           <div className="text-center py-12">
             <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-nexus-card/50 border border-white/[0.05] flex items-center justify-center">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -68,7 +99,7 @@ export default function TasksPage() {
             <p className="text-sm text-nexus-subtle/40">No Tasks Yet</p>
             <p className="text-xs text-nexus-subtle/20 mt-1">Create your first task to start tracking your progress.</p>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );

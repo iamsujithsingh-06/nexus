@@ -1,18 +1,16 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TASK_CATEGORIES } from '../services/taskService';
-import { getAllGoals } from '../services/goalService';
 
-export default function TaskForm({ task, onSubmit, onCancel }) {
+export default function TaskForm({ task, onSubmit, onCancel, goals: externalGoals }) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('Other');
   const [dueDate, setDueDate] = useState('');
   const [goalId, setGoalId] = useState('');
-  const [goals, setGoals] = useState([]);
+  const goals = externalGoals || [];
 
   useEffect(() => {
-    setGoals(getAllGoals().filter((g) => g.status === 'Active'));
     if (task) {
       setTitle(task.title || '');
       setDescription(task.description || '');
@@ -85,7 +83,7 @@ export default function TaskForm({ task, onSubmit, onCancel }) {
             >
               <option value="">No goal linked</option>
               {goals.map((g) => (
-                <option key={g.id} value={g.id}>{g.title}</option>
+                <option key={g._id || g.id} value={g._id || g.id}>{g.title}</option>
               ))}
             </select>
           )}
