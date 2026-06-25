@@ -9,8 +9,9 @@ import WelcomeScreen from '../components/WelcomeScreen';
 import Dashboard from '../components/Dashboard';
 import GoalsPage from './GoalsPage';
 import TasksPage from './TasksPage';
+import LearningPage from './LearningPage';
 import MemorySection from '../components/MemorySection';
-import ProjectsSection from '../components/ProjectsSection';
+import ProjectsPage from './ProjectsPage';
 import SettingsPage from './SettingsPage';
 
 export default function ChatPage() {
@@ -50,18 +51,22 @@ export default function ChatPage() {
           </>
         ) : (
           <WelcomeScreen
+            user={user}
             onSendMessage={currentChat ? sendMessage : sendNewMessage}
             onStartSession={createNewChat}
+            onNavigate={handleNavigate}
           />
         );
       case 'dashboard':
         return <Dashboard onNavigate={setActiveSection} />;
       case 'goals':
         return <GoalsPage />;
+      case 'learning':
+        return <LearningPage />;
       case 'tasks':
         return <TasksPage />;
       case 'projects':
-        return <ProjectsSection />;
+        return <ProjectsPage />;
       case 'memory':
         return <MemorySection />;
       case 'settings':
@@ -80,8 +85,10 @@ export default function ChatPage() {
           </>
         ) : (
           <WelcomeScreen
+            user={user}
             onSendMessage={currentChat ? sendMessage : sendNewMessage}
             onStartSession={createNewChat}
+            onNavigate={handleNavigate}
           />
         );
     }
@@ -105,7 +112,7 @@ export default function ChatPage() {
         />
       }
     >
-      <div className="flex-1 flex flex-col min-w-0 min-h-0 max-w-4xl mx-auto w-full">
+      <div className="flex-1 flex flex-col min-w-0 min-h-0 w-full">
         {renderContent()}
       </div>
     </AppShell>

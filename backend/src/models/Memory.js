@@ -25,6 +25,14 @@ const memorySchema = new mongoose.Schema(
         'fact',
         'decision',
         'insight',
+        'achievement',
+        'task',
+        'relationship',
+        'career',
+        'ideas',
+        'habits',
+        'important_event',
+        'custom',
       ],
     },
     key: {
@@ -72,6 +80,17 @@ const memorySchema = new mongoose.Schema(
       ref: 'Message',
       default: null,
     },
+    importanceScore: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 1,
+    },
+    lifecycleStatus: {
+      type: String,
+      enum: ['active', 'archived', 'expired', 'permanent'],
+      default: 'active',
+    },
     accessCount: {
       type: Number,
       default: 0,
@@ -88,6 +107,10 @@ const memorySchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    timesUsed: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,
@@ -97,6 +120,9 @@ const memorySchema = new mongoose.Schema(
 memorySchema.index({ userId: 1, type: 1 });
 memorySchema.index({ userId: 1, key: 1 }, { unique: true });
 memorySchema.index({ userId: 1, tags: 1 });
+memorySchema.index({ userId: 1, importanceScore: -1 });
+memorySchema.index({ userId: 1, lifecycleStatus: 1 });
+memorySchema.index({ userId: 1, lastAccessedAt: -1 });
 memorySchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 module.exports = mongoose.model('Memory', memorySchema);

@@ -1,20 +1,25 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { getAllTasks } from '../services/taskService';
 
 const milestoneIcons = [
   '🔍', '📚', '🛠️', '🎯', '🚀', '🎨', '📊', '🏆',
 ];
 
+function isTaskDone(task) {
+  return task.status === 'completed' || task.status === 'Completed';
+}
+
 export default function GoalRoadmap({ goal }) {
-  const tasks = useMemo(() => {
-    return getAllTasks().filter((t) => t.goalId === goal.id);
-  }, [goal.id, goal.taskIds]);
+  const tasks = goal.tasks || [];
 
   const tasksByMilestone = useMemo(() => {
     const map = {};
     goal.milestones.forEach((m) => {
-      map[m.id] = tasks.filter((t) => t.milestoneId === m.id);
+      const msId = m.id || m._id;
+      map[msId] = tasks.filter((t) => {
+        const tMsId = t.milestoneId || t.milestone_id;
+        return tMsId && String(tMsId) === String(msId);
+      });
     });
     return map;
   }, [goal.milestones, tasks]);
@@ -49,14 +54,15 @@ export default function GoalRoadmap({ goal }) {
 
         <div className="space-y-3">
           {goal.milestones.map((ms, i) => {
-            const msTasks = tasksByMilestone[ms.id] || [];
-            const doneTasks = msTasks.filter((t) => t.status === 'Completed').length;
+            const msId = ms.id || ms._id;
+            const msTasks = tasksByMilestone[msId] || [];
+            const doneTasks = msTasks.filter(isTaskDone).length;
             const isCurrent = !ms.completed && (i === 0 || goal.milestones[i - 1].completed);
             const isCompleted = ms.completed;
 
             return (
               <motion.div
-                key={ms.id}
+                key={msId}
                 initial={{ opacity: 0, x: -8 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.05 }}
@@ -75,7 +81,7 @@ export default function GoalRoadmap({ goal }) {
                 <div className={`flex-1 min-w-0 pb-1 ${isCompleted ? 'opacity-60' : ''}`}>
                   <div className="flex items-center gap-2 flex-wrap mb-0.5">
                     <span className={`text-sm font-medium ${isCompleted ? 'text-nexus-subtle/60' : 'text-white/90'}`}>
-                      {ms.name}
+                      {ms.name || ms.title}
                     </span>
                     {isCompleted && (
                       <span className="text-2xs px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400/70 border border-emerald-500/15">Done</span>
@@ -100,12 +106,12 @@ export default function GoalRoadmap({ goal }) {
                   {msTasks.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-1.5">
                       {msTasks.slice(0, 4).map((t) => (
-                        <span key={t.id} className={`text-2xs px-1.5 py-0.5 rounded ${
-                          t.status === 'Completed'
+                        <span key={t._id || t.id} className={`text-2xs px-1.5 py-0.5 rounded ${
+                          isTaskDone(t)
                             ? 'bg-emerald-500/8 text-emerald-400/50'
                             : 'bg-white/[0.03] text-nexus-subtle/30'
                         }`}>
-                          {t.status === 'Completed' ? '✓ ' : ''}{t.title.length > 28 ? t.title.slice(0, 26) + '…' : t.title}
+                          {isTaskDone(t) ? '✓ ' : ''}{t.title.length > 28 ? t.title.slice(0, 26) + '…' : t.title}
                         </span>
                       ))}
                       {msTasks.length > 4 && (

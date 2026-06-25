@@ -8,30 +8,9 @@ import ChatPage from '../pages/ChatPage';
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route
-        path="/login"
-        element={
-          <AuthLayout>
-            <LoginPage />
-          </AuthLayout>
-        }
-      />
-      <Route
-        path="/register"
-        element={
-          <AuthLayout>
-            <RegisterPage />
-          </AuthLayout>
-        }
-      />
-      <Route
-        path="/"
-        element={
-          <AppLayout>
-            <ChatPage />
-          </AppLayout>
-        }
-      />
+      <Route path="/login" element={<AuthLayout><LoginPage /></AuthLayout>} />
+      <Route path="/register" element={<AuthLayout><RegisterPage /></AuthLayout>} />
+      <Route path="/" element={<AppLayout><ChatPage /></AppLayout>} />
     </Routes>
   );
 }

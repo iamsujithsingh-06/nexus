@@ -3,27 +3,46 @@ import { motion } from 'framer-motion';
 import { useAuth } from '../hooks/useAuth';
 import ProgressBar from './ProgressBar';
 import * as goalApi from '../services/goalApi';
+import * as coachApi from '../services/coachApi';
+import CoachCard from './CoachCard';
+import DailyBrief from './DailyBrief';
+import ProductivityWidget from './ProductivityWidget';
+import RecommendationList from './RecommendationList';
+import MotivationCard from './MotivationCard';
 
 export default function Dashboard({ onNavigate }) {
   const { user } = useAuth();
   const [data, setData] = useState(null);
   const [insights, setInsights] = useState(null);
   const [achievements, setAchievements] = useState([]);
+  const [coach, setCoach] = useState({ card: null, brief: null, scores: null, recs: [], motivation: null });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
     async function load() {
       try {
-        const [dash, coach, ach] = await Promise.all([
+        const [dash, oldCoach, ach, cardRes, briefRes, scoresRes, recsRes, motRes] = await Promise.all([
           goalApi.getDashboard().catch(() => null),
           goalApi.getCoachInsights().catch(() => null),
           goalApi.getAchievements().catch(() => []),
+          coachApi.getCoachCard().catch(() => null),
+          coachApi.getDailyBrief().catch(() => null),
+          coachApi.getProductivityScores().catch(() => null),
+          coachApi.getRecommendations().catch(() => null),
+          coachApi.getMotivation().catch(() => null),
         ]);
         if (!mounted) return;
         if (dash) setData(dash);
-        if (coach) setInsights(coach.insights);
+        if (oldCoach) setInsights(oldCoach.insights);
         if (ach?.achievements) setAchievements(ach.achievements);
+        setCoach({
+          card: cardRes?.card || null,
+          brief: briefRes?.brief || null,
+          scores: scoresRes?.scores || null,
+          recs: recsRes?.recommendations || [],
+          motivation: motRes || null,
+        });
       } catch { /* offline fallback */ }
       if (mounted) setLoading(false);
     }
@@ -76,39 +95,22 @@ export default function Dashboard({ onNavigate }) {
           <StatCard label="Focus Score" value={`${focusScore}%`} accent={focusScore >= 70} />
         </div>
 
-        {/* AI Coach Insights */}
-        {insights && (
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-            <div className="bg-gradient-to-r from-nexus-accent/5 to-transparent border border-nexus-accent/10 rounded-xl p-4">
-              <h2 className="text-xs font-medium text-nexus-accent/60 uppercase tracking-wider mb-3">🧠 AI Coach Insights</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
-                <div>
-                  <p className="text-2xs text-emerald-400/60 uppercase tracking-wider mb-1">Strengths</p>
-                  {insights.strengths?.length > 0 ? insights.strengths.slice(0, 2).map((s, i) => (
-                    <p key={i} className="text-xs text-emerald-400/40">+ {s}</p>
-                  )) : <p className="text-xs text-nexus-subtle/20">No data yet</p>}
-                </div>
-                <div>
-                  <p className="text-2xs text-amber-400/60 uppercase tracking-wider mb-1">To Improve</p>
-                  {insights.weaknesses?.length > 0 ? insights.weaknesses.slice(0, 2).map((w, i) => (
-                    <p key={i} className="text-xs text-amber-400/40">! {w}</p>
-                  )) : <p className="text-xs text-nexus-subtle/20">No data yet</p>}
-                </div>
-                <div>
-                  <p className="text-2xs text-blue-400/60 uppercase tracking-wider mb-1">Recommendations</p>
-                  {insights.recommendations?.length > 0 ? insights.recommendations.slice(0, 2).map((r, i) => (
-                    <p key={i} className="text-xs text-blue-400/40">&rarr; {r}</p>
-                  )) : <p className="text-xs text-nexus-subtle/20">Keep going!</p>}
-                </div>
-              </div>
-              <div className="flex gap-4 text-2xs text-nexus-subtle/30">
-                <span>{insights.totalGoals || 0} active goals</span>
-                <span>{insights.completionRate || 0}% task completion</span>
-                <span>{insights.avgWeeklyScore || 0} avg weekly score</span>
-              </div>
-            </div>
-          </motion.div>
-        )}
+        {/* Recent Activity Bar - Mini Coach Card at top */}
+        <div className="space-y-4 mb-6">
+          {coach.card && <CoachCard card={coach.card} />}
+        </div>
+
+        {/* Daily Brief */}
+        {coach.brief && <div className="mb-6"><DailyBrief brief={coach.brief} /></div>}
+
+        {/* Recommendations + Motivation row */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+          <RecommendationList recommendations={coach.recs} />
+          <MotivationCard motivation={coach.motivation} />
+        </div>
+
+        {/* Productivity Scores */}
+        {coach.scores && <div className="mb-6"><ProductivityWidget scores={coach.scores} /></div>}
 
         {/* Two-column: Current Goal + Today Tasks */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">

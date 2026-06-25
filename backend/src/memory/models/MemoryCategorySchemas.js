@@ -1,12 +1,3 @@
-/**
- * Memory Category Value Schemas
- *
- * Each memory type has a structured `value` schema that defines what fields
- * are available for that category. These are NOT separate Mongoose schemas —
- * they live inside the Memory document's `value: Mixed` field. This file
- * documents the expected structure and provides factory functions.
- */
-
 const CATEGORY_TYPES = [
   'profile',
   'goal',
@@ -16,6 +7,14 @@ const CATEGORY_TYPES = [
   'conversation',
   'insight',
   'fact',
+  'achievement',
+  'task',
+  'relationship',
+  'career',
+  'ideas',
+  'habits',
+  'important_event',
+  'custom',
 ];
 
 const CATEGORY_META = {
@@ -66,6 +65,54 @@ const CATEGORY_META = {
     description: 'A confirmed fact about the user',
     defaultPriority: 3,
     fields: ['description', 'source', 'verified'],
+  },
+  achievement: {
+    label: 'Achievement',
+    description: 'Something the user has accomplished or completed',
+    defaultPriority: 8,
+    fields: ['title', 'description', 'date', 'category', 'impact', 'skillsUsed'],
+  },
+  task: {
+    label: 'Task',
+    description: 'An actionable item or to-do',
+    defaultPriority: 5,
+    fields: ['title', 'description', 'status', 'dueDate', 'priority', 'goalId'],
+  },
+  relationship: {
+    label: 'Relationship',
+    description: 'A person or connection the user interacts with',
+    defaultPriority: 5,
+    fields: ['name', 'role', 'context', 'since', 'notes'],
+  },
+  career: {
+    label: 'Career',
+    description: 'Career-related information, job history, and aspirations',
+    defaultPriority: 8,
+    fields: ['title', 'company', 'role', 'industry', 'timeline', 'skills', 'achievements', 'aspirations'],
+  },
+  ideas: {
+    label: 'Ideas',
+    description: 'An idea or concept the user wants to remember or explore',
+    defaultPriority: 4,
+    fields: ['title', 'description', 'category', 'status', 'relatedTopics'],
+  },
+  habits: {
+    label: 'Habit',
+    description: 'A regular routine or behavioral pattern',
+    defaultPriority: 5,
+    fields: ['name', 'description', 'frequency', 'streak', 'status', 'reminder'],
+  },
+  important_event: {
+    label: 'Important Event',
+    description: 'A notable personal or professional event',
+    defaultPriority: 7,
+    fields: ['title', 'description', 'date', 'type', 'impact', 'participants'],
+  },
+  custom: {
+    label: 'Custom',
+    description: 'User-defined memory category for flexible data',
+    defaultPriority: 3,
+    fields: ['title', 'data', 'categoryLabel', 'notes'],
   },
 };
 

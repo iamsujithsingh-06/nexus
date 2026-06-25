@@ -6,18 +6,20 @@ const Activity = require('../models/Activity');
 const WeeklyReport = require('../models/WeeklyReport');
 const Streak = require('../models/Streak');
 const goalService = require('../services/goalService');
+const MemoryEngine = require('../memory/engine/MemoryEngine');
+
+function getPriorityLabel(priority) {
+  const map = { 5: 'critical', 4: 'high', 3: 'medium', 2: 'low', 1: 'low' };
+  return map[priority] || 'medium';
+}
 
 // ── Goals ──
 
 exports.list = async (req, res, next) => {
   try {
-    const { status, category, search } = req.query;
-    const filter = { userId: req.user._id };
-    if (status) filter.status = status;
-    if (category) filter.category = category;
-    if (search) filter.title = { $regex: search, $options: 'i' };
-    const goals = await Goal.find(filter).sort({ createdAt: -1 });
-    res.json({ success: true, goals });
+    const { status, category, priority, search, overdue, sort, page, limit, deadlineBefore, deadlineAfter } = req.query;
+    const result = await goalService.search(req.user._id, { status, category, priority, search, overdue, sort, page, limit, deadlineBefore, deadlineAfter });
+    res.json({ success: true, ...result });
   } catch (error) { next(error); }
 };
 
@@ -70,9 +72,17 @@ exports.create = async (req, res, next) => {
       const result = await goalService.generateFullPlan(req.user._id, title.trim(), mappedCategory);
       await goalService.trackActivity(req.user._id, { goalsUpdated: 1 });
       await goalService._checkAchievements(req.user._id);
+      // Memory integration: store high-importance memory
+      MemoryEngine.save(req.user._id, 'goal', `goal:${result.goal._id}`, {
+        title: result.goal.title, description: result.goal.description || '',
+      }, { message: `Created goal: ${result.goal.title}`, source: 'system', importanceScore: 0.85, confidence: 1.0 }).catch(() => {});
       console.log(`[GOAL_CREATE:${reqId}] AI plan created: goal=${result.goal?._id} milestones=${result.milestones?.length} tasks=${result.tasks?.length}`);
       return res.status(201).json({ success: true, ...result });
     }
+
+    const label = getPriorityLabel(normalizedPriority);
+    const deadline = req.body.deadline ? new Date(req.body.deadline) : null;
+    const estimatedDuration = req.body.estimatedDuration || null;
 
     const goal = await Goal.create({
       userId: req.user._id,
@@ -80,8 +90,15 @@ exports.create = async (req, res, next) => {
       description: description || '',
       category: mappedCategory,
       priority: normalizedPriority,
+      priorityLabel: label,
+      deadline,
+      estimatedDuration,
     });
-    console.log(`[GOAL_CREATE:${reqId}] Goal created: _id=${goal._id} title="${goal.title}" category=${goal.category} priority=${goal.priority}`);
+    // Memory integration: store high-importance memory
+    MemoryEngine.save(req.user._id, 'goal', `goal:${goal._id}`, {
+      title: goal.title, description: goal.description || '',
+    }, { message: `Created goal: ${goal.title}`, source: 'system', importanceScore: 0.85, confidence: 1.0 }).catch(() => {});
+    console.log(`[GOAL_CREATE:${reqId}] Goal created: _id=${goal._id} title="${goal.title}" category=${goal.category} priority=${goal.priority} label=${label}`);
     await goalService.trackActivity(req.user._id, { goalsUpdated: 1 });
     await goalService._checkAchievements(req.user._id);
     res.status(201).json({ success: true, goal });
@@ -93,14 +110,21 @@ exports.create = async (req, res, next) => {
 
 exports.update = async (req, res, next) => {
   try {
-    const { title, description, category, priority, status } = req.body;
+    const { title, description, category, priority, status, deadline, estimatedDuration } = req.body;
     const goal = await Goal.findOne({ _id: req.params.id, userId: req.user._id });
     if (!goal) return res.status(404).json({ success: false, error: 'Goal not found' });
 
+    const oldStatus = goal.status;
     if (title) goal.title = title;
     if (description !== undefined) goal.description = description;
     if (category) goal.category = category;
-    if (priority) goal.priority = priority;
+    if (deadline !== undefined) goal.deadline = deadline ? new Date(deadline) : null;
+    if (estimatedDuration !== undefined) goal.estimatedDuration = estimatedDuration;
+
+    if (priority) {
+      goal.priority = priority;
+      goal.priorityLabel = getPriorityLabel(priority);
+    }
     if (status) {
       if (status === 'paused' && goal.status === 'active') goal.pausedAt = new Date();
       if (status === 'active' && goal.status === 'paused') goal.pausedAt = null;
@@ -111,6 +135,14 @@ exports.update = async (req, res, next) => {
       goal.status = status;
     }
     await goal.save();
+
+    // Memory integration: update on status change or content change
+    if (status && status !== oldStatus) {
+      MemoryEngine.save(req.user._id, 'goal', `goal:${goal._id}`, {
+        title: goal.title, description: goal.description || '', status: goal.status,
+      }, { message: `Goal "${goal.title}" ${status}`, source: 'system', importanceScore: 0.85, confidence: 1.0 }).catch(() => {});
+    }
+
     await goalService.trackActivity(req.user._id, { goalsUpdated: 1 });
     res.json({ success: true, goal });
   } catch (error) { next(error); }
@@ -330,6 +362,33 @@ exports.deleteTask = async (req, res, next) => {
     if (!task) return res.status(404).json({ success: false, error: 'Task not found' });
     if (task.goalId) goalService.recalculateProgress(task.goalId);
     res.json({ success: true, message: 'Task deleted' });
+  } catch (error) { next(error); }
+};
+
+// ── Statistics ──
+
+exports.stats = async (req, res, next) => {
+  try {
+    const stats = await goalService.getStats(req.user._id);
+    res.json({ success: true, stats });
+  } catch (error) { next(error); }
+};
+
+// ── Timeline ──
+
+exports.timeline = async (req, res, next) => {
+  try {
+    const events = await goalService.getTimeline(req.params.id);
+    res.json({ success: true, events });
+  } catch (error) { next(error); }
+};
+
+// ── Suggestions ──
+
+exports.suggestions = async (req, res, next) => {
+  try {
+    const suggestions = await goalService.getSuggestions(req.params.id);
+    res.json({ success: true, suggestions });
   } catch (error) { next(error); }
 };
 

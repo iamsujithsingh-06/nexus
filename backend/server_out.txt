@@ -1,0 +1,86 @@
+[Startup] PORT env: 5000
+[Startup] Process PID: 11660
+[Startup] Attempting to listen on port: 5000
+[Startup] ✓ Server listening on port 5000 (PID: 11660)
+[Startup] Environment: development
+[AIService] OpenAI client initialised (base: https://openrouter.ai/api/v1)
+[OpenRouter] AI service configured — default model: deepseek/deepseek-chat-v3
+[Phase2] Memory engine: ready
+  └─ Storage: MongoDB (8 categories)
+  └─ Extraction: regex + AI-powered
+  └─ Retrieval: keyword + semantic (embeddings)
+  └─ Consolidation: merge + decay + promote
+  └─ API: /api/memory (CRUD + search + summary)
+[Phase2] Prompt categories: 5 loaded
+[Phase2] Pipeline: Planner → Analyzer → Executor → Reviewer → Formatter
+[Phase2] Personality engine: active (loaded)
+[Startup] NEXUS API ready
+MongoDB connected: ac-0d2jzap-shard-00-00.x12h7h2.mongodb.net
+[TASK] GET /api/tasks
+[TASK] GET /api/tasks/dashboard
+[TASK] GET /api/tasks/stats
+[TASK] GET /api/tasks/plan
+[GOAL_ROUTE:be-1782408996730] GET /api/goals body=N/A
+[GOAL_ROUTE:be-1782408996737] GET /api/goals/dashboard body=N/A
+[LEARNING] GET /api/learning
+[PROJECT] GET /api/projects
+[PROJECT] GET /api/projects/dashboard
+[COACH] GET /api/coach/card
+[COACH] GET /api/coach/brief
+[COACH] GET /api/coach/review
+[COACH] GET /api/coach/weekly
+[COACH] GET /api/coach/productivity
+[COACH] GET /api/coach/recommendations
+[COACH] GET /api/coach/motivation
+[COACH] GET /api/coach/dashboard
+[TASK] GET /api/tasks
+[TASK] GET /api/tasks
+[TASK] GET /api/tasks/dashboard
+[TASK] GET /api/tasks/stats
+[TASK] GET /api/tasks/plan
+[AI:daily-plan] Request — model: deepseek/deepseek-chat-v3, history: 0 msgs, message: You are a daily planning AI. Given pending tasks and user context, create an opt...
+[AI:daily-plan] ✓ Response — 170 chars, finish_reason: stop
+[GOAL_ROUTE:be-1782409047719] GET /api/goals body=N/A
+[GOAL_ROUTE:be-1782409047828] GET /api/goals/dashboard body=N/A
+[LEARNING] GET /api/learning
+[PROJECT] GET /api/projects
+[PROJECT] GET /api/projects/dashboard
+[COACH] GET /api/coach/card
+[COACH] GET /api/coach/brief
+[COACH] GET /api/coach/review
+[COACH] GET /api/coach/weekly
+[COACH] GET /api/coach/productivity
+[COACH] GET /api/coach/recommendations
+[COACH] GET /api/coach/motivation
+[COACH] GET /api/coach/dashboard
+[GOAL_ROUTE:be-1782409051117] POST /api/goals body={"priority":"high","title":"QA Test Goal","category":"coding"}
+[GOAL_CREATE:be-1782409051117] Request body: {"title":"QA Test Goal","category":"coding","priority":"high"}
+[GOAL_CREATE:be-1782409051117] User ID: new ObjectId('6a3d674d82a809d17c287294')
+[GOAL_CREATE:be-1782409051117] Normalized: title="QA Test Goal" category="coding" priority=4 generatePlan=undefined
+[Memory] IGNORED key="goal:6a3d675b82a809d17c28732b" type=goal reason="No storable patterns matched"
+[GOAL_CREATE:be-1782409051117] Goal created: _id=6a3d675b82a809d17c28732b title="QA Test Goal" category=coding priority=4 label=high
+[TASK] POST /api/tasks
+[TASK] PATCH /api/tasks/6a3d675c82a809d17c287346/toggle
+[GOAL_ROUTE:be-1782409052860] GET /api/goals/6a3d675b82a809d17c28732b/roadmap body=N/A
+[GOAL_ROUTE:be-1782409052922] DELETE /api/goals/6a3d675b82a809d17c28732b body=N/A
+[PROJECT] POST /api/projects
+[TASK] GET /api/tasks
+[GOAL_ROUTE:be-1782409074377] POST /api/goals body={"priority":"high","title":"QA Phase Test Goal","category":"coding"}
+[GOAL_CREATE:be-1782409074377] Request body: {"title":"QA Phase Test Goal","category":"coding","priority":"high"}
+[GOAL_CREATE:be-1782409074377] User ID: new ObjectId('6a3d674d82a809d17c287294')
+[GOAL_CREATE:be-1782409074377] Normalized: title="QA Phase Test Goal" category="coding" priority=4 generatePlan=undefined
+[Memory] IGNORED key="goal:6a3d677282a809d17c28735d" type=goal reason="No storable patterns matched"
+[GOAL_CREATE:be-1782409074377] Goal created: _id=6a3d677282a809d17c28735d title="QA Phase Test Goal" category=coding priority=4 label=high
+[GOAL_ROUTE:be-1782409075548] GET /api/goals/6a3d677282a809d17c28735d/phases body=N/A
+[GOAL_ROUTE:be-1782409075646] GET /api/goals/6a3d677282a809d17c28735d/milestones body=N/A
+[PROJECT] POST /api/projects
+[PROJECT] POST /api/projects
+[Memory] IGNORED key="project:6a3d67d682a809d17c287379" type=project reason="No storable patterns matched"
+[PROJECT] POST /api/projects
+[PROJECT] POST /api/projects
+[PROJECT] POST /api/projects
+[Memory] IGNORED key="project:6a3d67e682a809d17c28738b" type=project reason="No storable patterns matched"
+[PROJECT] GET /api/projects/6a3d67e682a809d17c28738b/features
+[PROJECT] GET /api/projects/6a3d67e682a809d17c28738b/sprints
+[PROJECT] GET /api/projects/6a3d67e682a809d17c28738b/bugs
+[PROJECT] DELETE /api/projects/6a3d67e682a809d17c28738b

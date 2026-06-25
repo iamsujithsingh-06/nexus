@@ -1,18 +1,327 @@
-node:internal/modules/cjs/loader:1503
-  throw err;
-  ^
-
-Error: Cannot find module 'C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\server.js'
-    at Module._resolveFilename (node:internal/modules/cjs/loader:1500:15)
-    at wrapResolveFilename (node:internal/modules/cjs/loader:1071:27)
-    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1095:10)
-    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1116:12)
-    at Module._load (node:internal/modules/cjs/loader:1285:25)
-    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
-    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
-    at node:internal/main/run_main_module:33:47 {
-  code: 'MODULE_NOT_FOUND',
-  requireStack: []
-}
-
-Node.js v24.16.0
+[ERROR:be-1782408996649] 401 GET /api/tasks — Not authorized, no token provided
+[ERROR:be-1782408996649] Stack: Error: Not authorized, no token provided
+    at protect (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\middleware\auth.js:17:19)
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:280:10)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\routes\taskRoutes.js:8:3
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:286:9
+[ERROR:be-1782408996709] 401 GET /api/tasks/dashboard — Not authorized, no token provided
+[ERROR:be-1782408996709] Stack: Error: Not authorized, no token provided
+    at protect (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\middleware\auth.js:17:19)
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:280:10)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\routes\taskRoutes.js:8:3
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:286:9
+[ERROR:be-1782408996717] 401 GET /api/tasks/stats — Not authorized, no token provided
+[ERROR:be-1782408996717] Stack: Error: Not authorized, no token provided
+    at protect (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\middleware\auth.js:17:19)
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:280:10)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\routes\taskRoutes.js:8:3
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:286:9
+[ERROR:be-1782408996722] 401 GET /api/tasks/plan — Not authorized, no token provided
+[ERROR:be-1782408996722] Stack: Error: Not authorized, no token provided
+    at protect (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\middleware\auth.js:17:19)
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:280:10)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\routes\taskRoutes.js:8:3
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:286:9
+[ERROR:be-1782408996730] 401 GET /api/goals — Not authorized, no token provided
+[ERROR:be-1782408996730] Stack: Error: Not authorized, no token provided
+    at protect (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\middleware\auth.js:17:19)
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:280:10)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\routes\goalRoutes.js:10:3
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:286:9
+[ERROR:be-1782408996737] 401 GET /api/goals/dashboard — Not authorized, no token provided
+[ERROR:be-1782408996737] Stack: Error: Not authorized, no token provided
+    at protect (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\middleware\auth.js:17:19)
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:280:10)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\routes\goalRoutes.js:10:3
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:286:9
+[ERROR:be-1782408996742] 401 GET /api/learning — Not authorized, no token provided
+[ERROR:be-1782408996742] Stack: Error: Not authorized, no token provided
+    at protect (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\middleware\auth.js:17:19)
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:280:10)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\routes\learningRoutes.js:8:3
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:286:9
+[ERROR:be-1782408996750] 401 GET /api/memory — Not authorized, no token provided
+[ERROR:be-1782408996750] Stack: Error: Not authorized, no token provided
+    at protect (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\middleware\auth.js:17:19)
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:280:10)
+    at router.handle (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:175:3)
+    at router (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:47:12)
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:328:13)
+[ERROR:be-1782408996754] 401 GET /api/projects — Not authorized, no token provided
+[ERROR:be-1782408996754] Stack: Error: Not authorized, no token provided
+    at protect (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\middleware\auth.js:17:19)
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:280:10)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\routes\projectRoutes.js:8:3
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:286:9
+[ERROR:be-1782408996761] 401 GET /api/projects/dashboard — Not authorized, no token provided
+[ERROR:be-1782408996761] Stack: Error: Not authorized, no token provided
+    at protect (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\middleware\auth.js:17:19)
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:280:10)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\routes\projectRoutes.js:8:3
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:286:9
+[ERROR:be-1782408996768] 401 GET /api/coach/card — Not authorized, no token provided
+[ERROR:be-1782408996768] Stack: Error: Not authorized, no token provided
+    at protect (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\middleware\auth.js:17:19)
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:280:10)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\routes\coachRoutes.js:8:3
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:286:9
+[ERROR:be-1782408996773] 401 GET /api/coach/brief — Not authorized, no token provided
+[ERROR:be-1782408996773] Stack: Error: Not authorized, no token provided
+    at protect (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\middleware\auth.js:17:19)
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:280:10)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\routes\coachRoutes.js:8:3
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:286:9
+[ERROR:be-1782408996780] 401 GET /api/coach/review — Not authorized, no token provided
+[ERROR:be-1782408996780] Stack: Error: Not authorized, no token provided
+    at protect (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\middleware\auth.js:17:19)
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:280:10)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\routes\coachRoutes.js:8:3
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:286:9
+[ERROR:be-1782408996786] 401 GET /api/coach/weekly — Not authorized, no token provided
+[ERROR:be-1782408996786] Stack: Error: Not authorized, no token provided
+    at protect (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\middleware\auth.js:17:19)
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:280:10)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\routes\coachRoutes.js:8:3
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:286:9
+[ERROR:be-1782408996791] 401 GET /api/coach/productivity — Not authorized, no token provided
+[ERROR:be-1782408996791] Stack: Error: Not authorized, no token provided
+    at protect (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\middleware\auth.js:17:19)
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:280:10)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\routes\coachRoutes.js:8:3
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:286:9
+[ERROR:be-1782408996797] 401 GET /api/coach/recommendations — Not authorized, no token provided
+[ERROR:be-1782408996797] Stack: Error: Not authorized, no token provided
+    at protect (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\middleware\auth.js:17:19)
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:280:10)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\routes\coachRoutes.js:8:3
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:286:9
+[ERROR:be-1782408996803] 401 GET /api/coach/motivation — Not authorized, no token provided
+[ERROR:be-1782408996803] Stack: Error: Not authorized, no token provided
+    at protect (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\middleware\auth.js:17:19)
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:280:10)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\routes\coachRoutes.js:8:3
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:286:9
+[ERROR:be-1782408996808] 401 GET /api/coach/dashboard — Not authorized, no token provided
+[ERROR:be-1782408996808] Stack: Error: Not authorized, no token provided
+    at protect (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\middleware\auth.js:17:19)
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:280:10)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\routes\coachRoutes.js:8:3
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:286:9
+[ERROR:be-1782408996814] 401 GET /api/chats — Not authorized, no token provided
+[ERROR:be-1782408996814] Stack: Error: Not authorized, no token provided
+    at protect (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\middleware\auth.js:17:19)
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:280:10)
+    at router.handle (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:175:3)
+    at router (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:47:12)
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:328:13)
+[ERROR:be-1782408996820] 404 GET /api/nonexistent — Route /api/nonexistent not found
+[ERROR:be-1782408996820] Stack: Error: Route /api/nonexistent not found
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\server.js:80:8
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\route.js:149:13)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\route.js:145:7)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\route.js:145:7)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\route.js:145:7)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\route.js:145:7)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\route.js:145:7)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\route.js:145:7)
+    at Route.dispatch (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\route.js:119:3)
+[ERROR:be-1782408996876] 401 GET /api/tasks — Not authorized, no token provided
+[ERROR:be-1782408996876] Stack: Error: Not authorized, no token provided
+    at protect (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\middleware\auth.js:17:19)
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:280:10)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\routes\taskRoutes.js:8:3
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:286:9
+[MemoryStorage] GetById failed: Cast to ObjectId failed for value "search" (type string) at path "_id" for model "Memory"
+[ERROR:be-1782409051039] 404 GET /api/memory/search?q=test — Memory not found
+[ERROR:be-1782409051039] Stack: Error: Memory not found
+    at MemoryController.getById (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\controllers\memoryController.js:43:21)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+[ERROR:be-1782409052860] 404 GET /api/goals/6a3d675b82a809d17c28732b/roadmap — Route /api/goals/6a3d675b82a809d17c28732b/roadmap not found
+[ERROR:be-1782409052860] Stack: Error: Route /api/goals/6a3d675b82a809d17c28732b/roadmap not found
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\server.js:80:8
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\route.js:149:13)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\route.js:145:7)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\route.js:145:7)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\route.js:145:7)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\route.js:145:7)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\route.js:145:7)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\route.js:145:7)
+    at Route.dispatch (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\route.js:119:3)
+[ERROR:be-1782409053187] 500 POST /api/projects — Project validation failed: category: `web` is not a valid enum value for path `category`.
+[ERROR:be-1782409053187] Stack: ValidationError: Project validation failed: category: `web` is not a valid enum value for path `category`.
+    at Document.invalidate (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\mongoose\lib\document.js:3381:32)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\mongoose\lib\document.js:3142:17
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\mongoose\lib\schemaType.js:1443:9
+    at process.processTicksAndRejections (node:internal/process/task_queues:85:11)
+[ERROR:be-1782409053264] 404 GET /api/nonexistent — Route /api/nonexistent not found
+[ERROR:be-1782409053264] Stack: Error: Route /api/nonexistent not found
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\server.js:80:8
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\route.js:149:13)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\route.js:145:7)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\route.js:145:7)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\route.js:145:7)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\route.js:145:7)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\route.js:145:7)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\route.js:145:7)
+    at Route.dispatch (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\route.js:119:3)
+[ERROR:be-1782409053268] 401 GET /api/tasks — Not authorized, no token provided
+[ERROR:be-1782409053268] Stack: Error: Not authorized, no token provided
+    at protect (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\middleware\auth.js:17:19)
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:280:10)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\routes\taskRoutes.js:8:3
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\index.js:286:9
+[ERROR:be-1782409053272] 400 POST /api/auth/register — Email already registered
+[ERROR:be-1782409053272] Stack: Error: Email already registered
+    at exports.register (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\controllers\authController.js:28:19)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+[ERROR:be-1782409075548] 404 GET /api/goals/6a3d677282a809d17c28735d/phases — Route /api/goals/6a3d677282a809d17c28735d/phases not found
+[ERROR:be-1782409075548] Stack: Error: Route /api/goals/6a3d677282a809d17c28735d/phases not found
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\src\server.js:80:8
+    at Layer.handle [as handle_request] (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\route.js:149:13)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\route.js:145:7)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\route.js:145:7)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\route.js:145:7)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\route.js:145:7)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\route.js:145:7)
+    at next (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\route.js:145:7)
+    at Route.dispatch (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\express\lib\router\route.js:119:3)
+[ERROR:be-1782409075783] 500 POST /api/projects — Project validation failed: category: `web` is not a valid enum value for path `category`.
+[ERROR:be-1782409075783] Stack: ValidationError: Project validation failed: category: `web` is not a valid enum value for path `category`.
+    at Document.invalidate (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\mongoose\lib\document.js:3381:32)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\mongoose\lib\document.js:3142:17
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\mongoose\lib\schemaType.js:1443:9
+    at process.processTicksAndRejections (node:internal/process/task_queues:85:11)
+[ERROR:be-1782409174732] 500 POST /api/projects — Project validation failed: category: `invalid` is not a valid enum value for path `category`.
+[ERROR:be-1782409174732] Stack: ValidationError: Project validation failed: category: `invalid` is not a valid enum value for path `category`.
+    at Document.invalidate (C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\mongoose\lib\document.js:3381:32)
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\mongoose\lib\document.js:3142:17
+    at C:\Users\sujit\OneDrive\Downloads\Documents\nexus\backend\node_modules\mongoose\lib\schemaType.js:1443:9
+    at process.processTicksAndRejections (node:internal/process/task_queues:85:11)

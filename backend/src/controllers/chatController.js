@@ -2,6 +2,7 @@ const Chat = require('../models/Chat');
 const Message = require('../models/Message');
 const pipeline = require('../core/pipeline');
 const AppError = require('../utils/AppError');
+const AIBrain = require('../services/ai/AIBrain');
 const { classify, isGoal } = require('../brain/conversationClassifier');
 const QueryNormalizer = require('../memory/retrieval/queryNormalizer');
 const goalManager = require('../brain/goalManager');
@@ -9,6 +10,24 @@ const contextBuilder = require('../brain/contextBuilder');
 const MemoryManager = require('../memory/manager/memoryManager');
 const MemoryRetriever = require('../memory/retrieval/memoryRetriever');
 const { detectMemoryQuery } = require('../memory/detection/memoryQueryDetector');
+
+/**
+ * Map AIBrain intents to pipeline conversation modes.
+ */
+const INTENT_TO_MODE = {
+  greeting: 'greeting',
+  goal_related: 'goal',
+  task_related: 'general',
+  learning: 'question',
+  project: 'goal',
+  career: 'question',
+  personal: 'general',
+  knowledge: 'question',
+  analysis: 'deep_discussion',
+  planning: 'question',
+  motivational: 'general',
+  general: 'general',
+};
 
 exports.createChat = async (req, res, next) => {
   try {
@@ -99,61 +118,65 @@ exports.sendMessage = async (req, res, next) => {
       .lean();
     history.reverse();
 
-    // ── Brain Layer: Classify mode → detect memory queries → gate memory → build context ──
+    // ── AI Brain: Classify → retrieve → build context ──
     let enrichedContent = content;
     let conversationMode = 'general';
     let isMemQuery = false;
     try {
-      // Step 1: Classify conversation mode (never injects goals/memory unprompted)
-      const classification = classify(content);
-      conversationMode = classification.mode;
+      // Step 1: Process through AI Brain module
+      const brainResult = await AIBrain.process(req.user._id, content, history);
 
-      // Step 2: Detect if the message is asking about stored personal information
-      // This runs regardless of mode — even "question" and "general" modes can
-      // need memory if the user asks "What's my name?" or "Tell me about my goals"
-      const memQuery = detectMemoryQuery(content);
-      isMemQuery = memQuery.isMemoryQuery;
+      enrichedContent = brainResult.enrichedContent;
+      conversationMode = INTENT_TO_MODE[brainResult.intent] || 'general';
 
-      // Step 3: Retrieve goals + memory when needed
-      let goals = null;
-      let memoryContext = null;
+      // Step 2: Detect memory query flag (for logging)
+      isMemQuery = brainResult.classification.isMemoryQuery || false;
 
-      if (classification.needsMemory || isMemQuery) {
-        if (isMemQuery) {
-          // Memory query: use relevance-ranked retrieval
-          memoryContext = await MemoryRetriever.getContextForMessage(req.user._id, content);
-          if (memoryContext && memoryContext.length > 0) {
-            console.log(`[Brain] Memory query detected — retrieved ${memoryContext.length} relevant memories`);
-          } else {
-            console.log(`[Brain] Memory query detected — no matching memories found`);
-          }
-        } else {
-          // Full pipeline modes: use legacy context retrieval
-          goals = goalManager.getGoals('active');
-          memoryContext = await MemoryManager.getContextForUser(req.user._id);
-          console.log(`[Brain] Memory retrieved for mode: ${classification.mode}`);
-        }
-      } else {
-        console.log(`[Brain] Mode: ${classification.mode} — no memory needed`);
-      }
-
-      // Step 4: Build and serialize context (skips goals/memory when null)
-      const brainContext = contextBuilder.buildContext(goals, memoryContext, content, classification.mode, isMemQuery);
-      enrichedContent = contextBuilder.serializeContext(brainContext);
-
-      // Step 5: If the message IS a goal declaration (not a query), save it
-      if (!QueryNormalizer.isGoalQuery(content) && (classification.mode === 'goal' || isGoal(content))) {
+      // Step 3: If it's a goal declaration, save it
+      if (brainResult.intent === 'goal_related' &&
+          !QueryNormalizer.isGoalQuery(content)) {
         const title = goalManager.extractTitle(content);
         if (title) {
           const saved = goalManager.saveGoal(title, content, 'general', 'chat');
           if (saved) console.log(`[Brain] New goal saved: "${saved.title}"`);
         }
       }
+
+      // Step 4: Log memory extraction result
+      if (brainResult.memoryResult && brainResult.memoryResult.stored) {
+        console.log(`[Brain] Memory stored: ${brainResult.memoryResult.type} (confidence: ${brainResult.classification.confidence.toFixed(2)})`);
+      }
+
+      console.log(`[Brain] Intent: ${brainResult.intent} → mode: ${conversationMode} | context: ${brainResult.enrichedContent.length} chars | ${brainResult.metadata.total}ms`);
     } catch (brainError) {
-      // Non-fatal: brain enrichment failures fall back to the raw message
-      console.error('[Brain] Enrichment failed (non-fatal):', brainError.message);
+      // Fallback to legacy brain layer
+      console.error('[Brain] AIBrain failed, falling back to legacy layer:', brainError.message);
+      try {
+        const classification = classify(content);
+        conversationMode = classification.mode;
+        const memQuery = detectMemoryQuery(content);
+        isMemQuery = memQuery.isMemoryQuery;
+        let goals = null;
+        let memoryContext = null;
+        if (classification.needsMemory || isMemQuery) {
+          if (isMemQuery) {
+            memoryContext = await MemoryRetriever.getContextForMessage(req.user._id, content);
+          } else {
+            goals = goalManager.getGoals('active');
+            memoryContext = await MemoryManager.getContextForUser(req.user._id);
+          }
+        }
+        const brainContext = contextBuilder.buildContext(goals, memoryContext, content, classification.mode, isMemQuery);
+        enrichedContent = contextBuilder.serializeContext(brainContext);
+        if (!QueryNormalizer.isGoalQuery(content) && (classification.mode === 'goal' || isGoal(content))) {
+          const title = goalManager.extractTitle(content);
+          if (title) goalManager.saveGoal(title, content, 'general', 'chat');
+        }
+      } catch (legacyError) {
+        console.error('[Brain] Legacy brain layer also failed:', legacyError.message);
+      }
     }
-    // ── End Brain Layer ──
+    // ── End AI Brain Layer ──
 
     const pipelineTimeout = setTimeout(() => {
       console.error(`[Chat] ⚠️ Pipeline is taking >30s for chat ${chatId}`);

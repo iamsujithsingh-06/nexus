@@ -4,6 +4,7 @@ const NAV_ITEMS = [
   { id: 'home', label: 'Home', icon: HomeIcon },
   { id: 'dashboard', label: 'Dashboard', icon: DashboardIcon },
   { id: 'goals', label: 'Goals', icon: GoalsIcon },
+  { id: 'learning', label: 'Learning', icon: LearningIcon },
   { id: 'tasks', label: 'Tasks', icon: TasksIcon },
   { id: 'projects', label: 'Projects', icon: ProjectsIcon },
   { id: 'memory', label: 'Memory', icon: MemoryIcon },
@@ -134,11 +135,15 @@ function SidebarItem({ icon: Icon, label, isActive, isExpanded, onClick }) {
     <motion.button
       onClick={onClick}
       whileTap={{ scale: 0.97 }}
-      className={`sidebar-item w-full ${isActive ? 'active' : ''}`}
+      className={`sidebar-item w-full group ${isActive ? 'active' : ''}`}
       style={{ justifyContent: isExpanded ? 'flex-start' : 'center' }}
-      title={!isExpanded ? label : undefined}
     >
       <Icon className="shrink-0" />
+      {!isExpanded && (
+        <div className="absolute left-full ml-3 px-2.5 py-1 rounded-lg bg-nexus-card/95 border border-white/[0.06] text-xs text-white/80 font-medium whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 translate-x-[-4px] group-hover:translate-x-0 shadow-xl z-50 pointer-events-none">
+          {label}
+        </div>
+      )}
       <AnimatePresence mode="wait">
         {isExpanded && (
           <motion.span
@@ -168,6 +173,14 @@ function GoalsIcon({ className }) {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
       <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+    </svg>
+  );
+}
+
+function LearningIcon({ className }) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="10"/>
     </svg>
   );
 }

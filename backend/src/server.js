@@ -10,7 +10,11 @@ const aiService = require('./services/aiService');
 const authRoutes = require('./routes/authRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 const memoryRoutes = require('./routes/memoryRoutes');
-const { goalRoutes, taskRoutes } = require('./routes/goalRoutes');
+const { goalRoutes } = require('./routes/goalRoutes');
+const taskRoutes = require('./routes/taskRoutes');
+const learningRoutes = require('./routes/learningRoutes');
+const projectRoutes = require('./routes/projectRoutes');
+const coachRoutes = require('./routes/coachRoutes');
 const AppError = require('./utils/AppError');
 
 const memoryManager = require('./memory/manager/memoryManager');
@@ -64,6 +68,9 @@ app.use('/api/chats', chatRoutes);
 app.use('/api/memory', memoryRoutes);
 app.use('/api/goals', goalRoutes);
 app.use('/api/tasks', taskRoutes);
+app.use('/api/learning', learningRoutes);
+app.use('/api/projects', projectRoutes);
+app.use('/api/coach', coachRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ success: true, status: 'NEXUS API is running' });
@@ -75,9 +82,12 @@ app.all('*', (req, res, next) => {
 
 app.use((err, req, res, _next) => {
   const reqId = req._reqId || 'no-id';
-  const statusCode = err.statusCode || 500;
+  let statusCode = err.statusCode || 500;
+  if (err.name === 'ValidationError') statusCode = 400;
+  if (err.name === 'CastError') statusCode = 400;
+  if (err.code === 11000) statusCode = 409;
   console.error(`[ERROR:${reqId}] ${statusCode} ${req.method} ${req.originalUrl} — ${err.message}`);
-  console.error(`[ERROR:${reqId}] Stack:`, err.stack);
+  if (process.env.NODE_ENV !== 'production') console.error(`[ERROR:${reqId}] Stack:`, err.stack);
   res.status(statusCode).json({
     success: false,
     message: err.message || 'Internal server error',

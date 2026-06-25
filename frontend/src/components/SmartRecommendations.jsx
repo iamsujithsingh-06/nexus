@@ -1,18 +1,19 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { getAllTasks } from '../services/taskService';
+
+function isTaskDone(task) {
+  return task.status === 'completed' || task.status === 'Completed';
+}
 
 export default function SmartRecommendations({ goal }) {
-  const tasks = useMemo(() => {
-    return getAllTasks().filter((t) => t.goalId === goal.id);
-  }, [goal.id, goal.taskIds]);
+  const tasks = goal.tasks || [];
 
   const recommendations = useMemo(() => {
     const results = [];
     const totalMilestones = goal.milestones.length;
     const completedMilestones = goal.milestones.filter((m) => m.completed).length;
     const totalTasks = tasks.length;
-    const completedTasks = tasks.filter((t) => t.status === 'Completed').length;
+    const completedTasks = tasks.filter(isTaskDone).length;
 
     if (goal.status === 'Completed') {
       results.push({ type: 'celebrate', icon: '🎉', text: 'Congratulations! You have completed this goal. Great work!' });
@@ -38,15 +39,20 @@ export default function SmartRecommendations({ goal }) {
     }
 
     if (currentMilestone) {
-      const milestoneTasks = tasks.filter((t) => t.milestoneId === currentMilestone.id);
-      const doneMilestoneTasks = milestoneTasks.filter((t) => t.status === 'Completed').length;
+      const msId = currentMilestone.id || currentMilestone._id;
+      const milestoneTasks = tasks.filter((t) => {
+        const tMsId = t.milestoneId || t.milestone_id;
+        return tMsId && String(tMsId) === String(msId);
+      });
+      const doneMilestoneTasks = milestoneTasks.filter(isTaskDone).length;
+      const msName = currentMilestone.name || currentMilestone.title;
 
       if (milestoneTasks.length > 0 && doneMilestoneTasks === 0) {
-        results.push({ type: 'focus', icon: '🎯', text: `Start working on "${currentMilestone.name}". Complete the first task to get started.` });
+        results.push({ type: 'focus', icon: '🎯', text: `Start working on "${msName}". Complete the first task to get started.` });
       } else if (milestoneTasks.length > 0 && doneMilestoneTasks === milestoneTasks.length) {
-        results.push({ type: 'next', icon: '✅', text: `All tasks in "${currentMilestone.name}" are done! Mark this milestone as complete.` });
+        results.push({ type: 'next', icon: '✅', text: `All tasks in "${msName}" are done! Mark this milestone as complete.` });
       } else if (milestoneTasks.length > 0 && doneMilestoneTasks / milestoneTasks.length >= 0.5) {
-        results.push({ type: 'close', icon: '📋', text: `You are over 50% through "${currentMilestone.name}". Complete ${milestoneTasks.length - doneMilestoneTasks} more task(s) to finish it.` });
+        results.push({ type: 'close', icon: '📋', text: `You are over 50% through "${msName}". Complete ${milestoneTasks.length - doneMilestoneTasks} more task(s) to finish it.` });
       }
     }
 
@@ -56,15 +62,15 @@ export default function SmartRecommendations({ goal }) {
 
     const now = new Date();
     const recentTasks = tasks.filter((t) => {
-      if (t.status !== 'Completed' || !t.updatedAt) return false;
+      if (!isTaskDone(t) || !t.updatedAt) return false;
       return (now - new Date(t.updatedAt)) < 7 * 24 * 60 * 60 * 1000;
     });
     if (recentTasks.length === 0 && completedTasks > 0) {
       results.push({ type: 'inactive', icon: '⏰', text: 'It has been a while since your last completed task. Try completing one small task to regain momentum.' });
     }
 
-    if (goal.targetDate) {
-      const target = new Date(goal.targetDate);
+    if (goal.targetDate || goal.deadline) {
+      const target = new Date(goal.targetDate || goal.deadline);
       const daysLeft = Math.ceil((target - now) / (1000 * 60 * 60 * 24));
       if (daysLeft > 0 && daysLeft <= 7) {
         results.push({ type: 'deadline', icon: '⏳', text: `Only ${daysLeft} day(s) left until your target date. Focus on the most important tasks.` });

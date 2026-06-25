@@ -17,6 +17,11 @@ router.use(protect);
 router.get('/dashboard', goalController.dashboard);
 router.get('/coach', goalController.coachInsights);
 
+// ── Statistics & Suggestions ──
+router.get('/stats', goalController.stats);
+router.get('/:id/timeline', goalController.timeline);
+router.get('/:id/suggestions', goalController.suggestions);
+
 // ── Achievements ──
 router.get('/achievements', goalController.listAchievements);
 
@@ -49,22 +54,8 @@ router.put('/milestones/:milestoneId', goalController.editMilestone);
 router.patch('/milestones/:milestoneId/toggle', goalController.toggleMilestone);
 router.delete('/milestones/:milestoneId', goalController.deleteMilestone);
 
-// ── Tasks (scoped under goals + standalone) ──
+// ── Tasks (scoped under goals) ──
 router.get('/:id/tasks', goalController.listTasks);
 router.post('/:id/tasks', goalController.createTask);
 
-// ── Standalone Task Routes ──
-const taskRouter = express.Router();
-taskRouter.use((req, res, next) => {
-  const reqId = req._reqId || 'no-id';
-  console.log(`[TASK_ROUTE:${reqId}] ${req.method} ${req.originalUrl} body=${req.method === 'POST' || req.method === 'PUT' ? JSON.stringify(req.body).substring(0, 500) : 'N/A'}`);
-  next();
-});
-taskRouter.use(protect);
-taskRouter.get('/', goalController.listTasks);
-taskRouter.post('/', goalController.createTask);
-taskRouter.put('/:taskId', goalController.updateTask);
-taskRouter.patch('/:taskId/toggle', goalController.toggleTask);
-taskRouter.delete('/:taskId', goalController.deleteTask);
-
-module.exports = { goalRoutes: router, taskRoutes: taskRouter };
+module.exports = { goalRoutes: router };

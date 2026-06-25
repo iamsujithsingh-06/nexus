@@ -26,6 +26,15 @@ export const toggleTask = (taskId) => api.patch(`/tasks/${taskId}/toggle`).then(
 export const updateTask = (taskId, data) => api.put(`/tasks/${taskId}`, data).then(r => r.data);
 export const deleteTask = (taskId) => api.delete(`/tasks/${taskId}`).then(r => r.data);
 
+// ── Statistics ──
+export const getGoalStats = () => api.get('/goals/stats').then(r => r.data);
+
+// ── Timeline ──
+export const getGoalTimeline = (goalId) => api.get(`/goals/${goalId}/timeline`).then(r => r.data);
+
+// ── Suggestions ──
+export const getGoalSuggestions = (goalId) => api.get(`/goals/${goalId}/suggestions`).then(r => r.data);
+
 // ── Dashboard ──
 export const getDashboard = () => api.get('/goals/dashboard').then(r => r.data);
 

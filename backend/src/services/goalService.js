@@ -419,6 +419,285 @@ Generate tasks for milestone "${milestoneTitle}" under goal "${goalTitle}"`;
     return Achievement.find({ userId }).sort({ earnedAt: -1 });
   }
 
+  // ── Goal Statistics ──
+
+  async getStats(userId) {
+    const goals = await Goal.find({ userId, status: { $ne: 'archived' } }).lean();
+    const milestones = await Milestone.find({ userId }).lean();
+    const tasks = await GoalTask.find({ userId }).lean();
+
+    const totalGoals = goals.length;
+    const activeGoals = goals.filter(g => g.status === 'active').length;
+    const completedGoals = goals.filter(g => g.status === 'completed').length;
+    const pausedGoals = goals.filter(g => g.status === 'paused').length;
+    const plannedGoals = goals.filter(g => g.status === 'planned').length;
+    const overdueGoals = goals.filter(g => {
+      if (!g.deadline || g.status === 'completed') return false;
+      return new Date(g.deadline) < new Date();
+    }).length;
+
+    const overallProgress = activeGoals + completedGoals > 0
+      ? Math.round(goals.reduce((s, g) => s + g.progress, 0) / Math.max(1, goals.filter(g => g.status !== 'archived').length))
+      : 0;
+
+    const totalTasks = tasks.length;
+    const completedTasks = tasks.filter(t => t.status === 'completed').length;
+    const completionRate = totalTasks ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+    const totalMilestones = milestones.length;
+    const completedMilestones = milestones.filter(m => m.status === 'completed').length;
+
+    // Average completion time for completed goals
+    const completedGoalDocs = goals.filter(g => g.status === 'completed' && g.completedAt && g.createdAt);
+    const avgCompletionTime = completedGoalDocs.length > 0
+      ? Math.round(completedGoalDocs.reduce((s, g) => {
+          const days = (new Date(g.completedAt) - new Date(g.createdAt)) / (1000 * 60 * 60 * 24);
+          return s + days;
+        }, 0) / completedGoalDocs.length)
+      : 0;
+
+    // Longest running goal
+    let longestRunningGoal = null;
+    let longestDays = 0;
+    for (const g of goals) {
+      if (g.status === 'active' || g.status === 'paused') {
+        const days = Math.round((Date.now() - new Date(g.createdAt)) / (1000 * 60 * 60 * 24));
+        if (days > longestDays) {
+          longestDays = days;
+          longestRunningGoal = { _id: g._id, title: g.title, days };
+        }
+      }
+    }
+
+    // Most productive category
+    const catProgress = {};
+    for (const g of goals) {
+      const cat = g.category || 'general';
+      if (!catProgress[cat]) catProgress[cat] = { count: 0, totalProgress: 0 };
+      catProgress[cat].count++;
+      catProgress[cat].totalProgress += g.progress;
+    }
+    let bestCategory = null;
+    let bestCatScore = 0;
+    for (const [cat, data] of Object.entries(catProgress)) {
+      const avg = data.totalProgress / data.count;
+      if (avg > bestCatScore && data.count >= 1) {
+        bestCatScore = avg;
+        bestCategory = { category: cat, avgProgress: Math.round(avg), count: data.count };
+      }
+    }
+
+    return {
+      totalGoals,
+      activeGoals,
+      completedGoals,
+      pausedGoals,
+      plannedGoals,
+      overdueGoals,
+      overallProgress,
+      totalMilestones,
+      completedMilestones,
+      completionRate,
+      avgCompletionTime,
+      longestRunningGoal,
+      mostProductiveCategory: bestCategory,
+    };
+  }
+
+  // ── Goal Timeline ──
+
+  async getTimeline(goalId) {
+    const goal = await Goal.findById(goalId).lean();
+    if (!goal) return [];
+
+    const events = [];
+
+    // Created
+    events.push({
+      type: 'created',
+      label: 'Goal Created',
+      date: goal.createdAt,
+      description: `"${goal.title}" was created`,
+    });
+
+    // Milestones
+    const milestones = await Milestone.find({ goalId }).sort({ order: 1 }).lean();
+    for (const ms of milestones) {
+      events.push({
+        type: ms.status === 'completed' ? 'milestone_completed' : 'milestone',
+        label: ms.status === 'completed' ? 'Milestone Completed' : 'Milestone Added',
+        date: ms.completedAt || ms.createdAt,
+        description: ms.title,
+        milestoneId: ms._id,
+        completed: ms.status === 'completed',
+      });
+    }
+
+    // Status changes
+    if (goal.status === 'active' && goal.startedAt) {
+      events.push({
+        type: 'started',
+        label: 'Work Started',
+        date: goal.startedAt,
+        description: 'Started working on this goal',
+      });
+    }
+    if (goal.status === 'paused' && goal.pausedAt) {
+      events.push({
+        type: 'paused',
+        label: 'Paused',
+        date: goal.pausedAt,
+        description: 'Goal was paused',
+      });
+    }
+    if (goal.status === 'completed' && goal.completedAt) {
+      events.push({
+        type: 'completed',
+        label: 'Completed',
+        date: goal.completedAt,
+        description: `Goal completed at ${goal.progress}%`,
+      });
+    }
+
+    // Deadline
+    if (goal.deadline) {
+      events.push({
+        type: 'deadline',
+        label: 'Deadline',
+        date: goal.deadline,
+        description: `Due by ${new Date(goal.deadline).toLocaleDateString()}`,
+      });
+    }
+
+    // Tasks completed
+    const completedTasks = await GoalTask.find({
+      goalId,
+      status: 'completed',
+      completedAt: { $ne: null },
+    }).sort({ completedAt: -1 }).limit(5).lean();
+
+    for (const t of completedTasks) {
+      events.push({
+        type: 'task_completed',
+        label: 'Task Completed',
+        date: t.completedAt,
+        description: t.title,
+        taskId: t._id,
+      });
+    }
+
+    events.sort((a, b) => new Date(a.date) - new Date(b.date));
+    return events;
+  }
+
+  // ── AI Suggestions for a goal ──
+
+  async getSuggestions(goalId) {
+    const goal = await Goal.findById(goalId).lean();
+    if (!goal || goal.status === 'completed' || goal.status === 'archived') return [];
+
+    const milestones = await Milestone.find({ goalId, status: { $ne: 'completed' } })
+      .sort({ order: 1 }).limit(3).lean();
+
+    const suggestions = [];
+
+    if (milestones.length > 0) {
+      suggestions.push({
+        type: 'next_milestone',
+        text: `Work on "${milestones[0].title}"`,
+        icon: '🎯',
+      });
+    }
+
+    if (goal.deadline) {
+      const daysLeft = Math.round((new Date(goal.deadline) - new Date()) / (1000 * 60 * 60 * 24));
+      if (daysLeft > 0 && daysLeft <= 7) {
+        suggestions.push({
+          type: 'deadline_approaching',
+          text: `Deadline in ${daysLeft} day${daysLeft > 1 ? 's' : ''}`,
+          icon: '⏰',
+        });
+      }
+    }
+
+    if (goal.progress < 25) {
+      suggestions.push({
+        type: 'start',
+        text: `Take the first step: ${milestones[0]?.title || 'begin working on this goal'}`,
+        icon: '🚀',
+      });
+    } else if (goal.progress < 50) {
+      suggestions.push({
+        type: 'momentum',
+        text: `${100 - goal.progress}% to go — keep the momentum!`,
+        icon: '💪',
+      });
+    } else if (goal.progress < 75) {
+      suggestions.push({
+        type: 'halfway',
+        text: `Over halfway there! Focus on the next milestone.`,
+        icon: '🔥',
+      });
+    } else {
+      suggestions.push({
+        type: 'closing',
+        text: `Almost done! Finish the remaining milestones.`,
+        icon: '🏁',
+      });
+    }
+
+    return suggestions;
+  }
+
+  // ── Enhanced Search ──
+
+  async search(userId, filters = {}) {
+    const query = { userId, status: { $ne: 'archived' } };
+
+    if (filters.status) {
+      if (filters.status === 'active') query.status = 'active';
+      else if (filters.status === 'completed') query.status = 'completed';
+      else if (filters.status === 'paused') query.status = 'paused';
+      else if (filters.status === 'planned') query.status = 'planned';
+    }
+
+    if (filters.category) query.category = filters.category;
+    if (filters.priority) query.priority = parseInt(filters.priority);
+
+    if (filters.search) {
+      const regex = new RegExp(filters.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+      query.$or = [
+        { title: regex },
+        { description: regex },
+        { tags: regex },
+      ];
+    }
+
+    if (filters.deadlineBefore) query.deadline = { $lte: new Date(filters.deadlineBefore) };
+    if (filters.deadlineAfter) query.deadline = { ...query.deadline, $gte: new Date(filters.deadlineAfter) };
+    if (filters.overdue === 'true') {
+      query.deadline = { ...query.deadline, $lt: new Date() };
+      query.status = { $nin: ['completed', 'archived'] };
+    }
+
+    const sort = {};
+    if (filters.sort === 'deadline') sort.deadline = 1;
+    else if (filters.sort === 'priority') sort.priority = -1;
+    else if (filters.sort === 'progress') sort.progress = -1;
+    else sort.createdAt = -1;
+
+    const page = parseInt(filters.page) || 1;
+    const limit = parseInt(filters.limit) || 20;
+    const skip = (page - 1) * limit;
+
+    const [goals, total] = await Promise.all([
+      Goal.find(query).sort(sort).skip(skip).limit(limit).lean(),
+      Goal.countDocuments(query),
+    ]);
+
+    return { goals, total, page, limit, totalPages: Math.ceil(total / limit) };
+  }
+
   // ── Dashboard Data ──
 
   async getDashboard(userId) {
